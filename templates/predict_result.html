@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Hasil Prediksi - Air Quality Indonesia{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-header {
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .result-header-good { background: linear-gradient(135deg, #00e400 0%, #00b300 100%); }
+    .result-header-moderate { background: linear-gradient(135deg, #ffff00 0%, #ffdd00 100%); color: #000; }
+    .result-header-unhealthy-sensitive { background: linear-gradient(135deg, #ff7e00 0%, #ff6600 100%); }
+    .result-header-unhealthy { background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); }
+    .result-header-very-unhealthy { background: linear-gradient(135deg, #8f3f97 0%, #6b2d73 100%); }
+    .result-header-hazardous { background: linear-gradient(135deg, #7e0023 0%, #5c001a 100%); }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        background-color: rgba(255,255,255,0.2);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        color: inherit;
+    }
+    
+    .stat-box {
+        padding: 2rem;
+        border-radius: 15px;
+        background: rgba(102, 126, 234, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .display-number {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .alert-box {
+        border: none;
+        border-left: 5px solid #667eea;
+        border-radius: 10px;
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .badge-good { background-color: #00e400; color: white; }
+    .badge-moderate { background-color: #ffff00; color: #000; }
+    .badge-unhealthy-sensitive { background-color: #ff7e00; color: white; }
+    .badge-unhealthy { background-color: #ff0000; color: white; }
+    .badge-very-unhealthy { background-color: #8f3f97; color: white; }
+    .badge-hazardous { background-color: #7e0023; color: white; }
+    
+    .header-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    }
+    
+    .header-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .badge-size {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    .text-primary-custom {
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold">
+        <i class="fas fa-chart-line me-2 text-primary-custom"></i> 
+        {% if current_lang == 'id' %}Hasil Prediksi{% else %}Prediction Results{% endif %}: {{ city }}
+    </h2>
+    
+    <!-- Main Result -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="result-header 
+                    {% if result.pm25_predicted <= 15 %}result-header-good text-white
+                    {% elif result.pm25_predicted <= 35 %}result-header-moderate
+                    {% elif result.pm25_predicted <= 55 %}result-header-unhealthy-sensitive text-white
+                    {% elif result.pm25_predicted <= 150 %}result-header-unhealthy text-white
+                    {% elif result.pm25_predicted <= 250 %}result-header-very-unhealthy text-white
+                    {% else %}result-header-hazardous text-white
+                    {% endif %}">
+                    <h4 class="mb-0">
+                        <i class="fas fa-wind me-2"></i> 
+                        {{ t.status }}: 
+                        <span class="status-badge">
+                            {{ result.air_quality.status }}
+                        </span>
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="stat-box text-center">
+                                <h6 class="text-muted mb-3">{{ t.predicted_pm25 }}</h6>
+                                <div class="display-number">{{ "%.2f"|format(result.pm25_predicted) }}</div>
+                                <p class="text-muted mt-2 mb-0">μg/m³</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box text-center">
+                                <h6 class="text-muted mb-3">
+                                    {% if current_lang == 'id' %}Standar WHO{% else %}WHO Standard{% endif %}
+                                </h6>
+                                <div class="display-number">{{ result.who_standard }}</div>
+                                <p class="text-muted mt-2 mb-0">μg/m³</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box text-center">
+                                <h6 class="text-muted mb-3">
+                                    {% if current_lang == 'id' %}Rasio WHO{% else %}WHO Ratio{% endif %}
+                                </h6>
+                                <div class="display-number">{{ "%.2f"|format(result.who_ratio) }}x</div>
+                                <p class="mt-2 mb-0">
+                                    {% if result.air_quality.who_compliant %}
+                                        <i class="fas fa-check-circle text-success"></i> 
+                                        <strong class="text-success">
+                                            {% if current_lang == 'id' %}Sesuai{% else %}Compliant{% endif %}
+                                        </strong>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i> 
+                                        <strong class="text-danger">
+                                            {% if current_lang == 'id' %}Tidak Sesuai{% else %}Not Compliant{% endif %}
+                                        </strong>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="alert alert-box">
+                        <strong>
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% if current_lang == 'id' %}Deskripsi{% else %}Description{% endif %}:
+                        </strong>
+                        <p class="mb-0 mt-2">{{ result.air_quality.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-white header-warning">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i> {{ t.recommendations }}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for rec in result.recommendations %}
+                        <li class="list-group-item border-0 py-3">
+                            <i class="fas fa-check-circle text-success me-3"></i> 
+                            <span>{{ rec }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Comparison -->
+    {% if comparison %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-white header-info">
+                    <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i> {{ t.model_comparison }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="w-25">Model</th>
+                                    <th class="w-25">
+                                        {% if current_lang == 'id' %}Prediksi (μg/m³){% else %}Prediction (μg/m³){% endif %}
+                                    </th>
+                                    <th class="w-30">{{ t.status }}</th>
+                                    <th class="w-20 text-center">WHO Compliant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for model_name, model_result in comparison.items() %}
+                                <tr>
+                                    <td><strong>{{ model_name.replace('_', ' ').title() }}</strong></td>
+                                    <td class="fw-bold">{{ "%.2f"|format(model_result.prediction) }}</td>
+                                    <td>
+                                        <span class="badge badge-size
+                                            {% if model_result.prediction <= 15 %}badge-good
+                                            {% elif model_result.prediction <= 35 %}badge-moderate
+                                            {% elif model_result.prediction <= 55 %}badge-unhealthy-sensitive
+                                            {% elif model_result.prediction <= 150 %}badge-unhealthy
+                                            {% elif model_result.prediction <= 250 %}badge-very-unhealthy
+                                            {% else %}badge-hazardous
+                                            {% endif %}">
+                                            {{ model_result.classification.status[:25] }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if model_result.classification.who_compliant %}
+                                            <i class="fas fa-check-circle text-success fs-5"></i>
+                                            <small class="d-block text-success fw-bold">
+                                                {% if current_lang == 'id' %}Ya{% else %}Yes{% endif %}
+                                            </small>
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-danger fs-5"></i>
+                                            <small class="d-block text-danger fw-bold">
+                                                {% if current_lang == 'id' %}Tidak{% else %}No{% endif %}
+                                            </small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/predict" class="btn btn-primary btn-lg px-5 py-3">
+                    <i class="fas fa-redo me-2"></i> {{ t.predict_again }}
+                </a>
+                <a href="/dashboard" class="btn btn-secondary btn-lg px-5 py-3">
+                    <i class="fas fa-chart-line me-2"></i> {{ t.view_dashboard }}
+                </a>
+                <a href="/map" class="btn btn-success btn-lg px-5 py-3">
+                    <i class="fas fa-map-marked-alt me-2"></i> {{ t.view_map }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

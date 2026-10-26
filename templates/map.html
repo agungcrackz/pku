@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Peta - Air Quality Indonesia{% endblock %}
+
+{% block extra_css %}
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    /* Custom cluster styles */
+    .marker-cluster-small {
+        background-color: rgba(59, 130, 246, 0.6);
+    }
+    .marker-cluster-small div {
+        background-color: rgba(59, 130, 246, 0.8);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .marker-cluster-medium {
+        background-color: rgba(251, 146, 60, 0.6);
+    }
+    .marker-cluster-medium div {
+        background-color: rgba(251, 146, 60, 0.8);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .marker-cluster-large {
+        background-color: rgba(239, 68, 68, 0.6);
+    }
+    .marker-cluster-large div {
+        background-color: rgba(239, 68, 68, 0.8);
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* Hide labels by default, show on zoom */
+    .city-label {
+        transition: opacity 0.3s;
+    }
+    
+    /* Layer control buttons */
+    .layer-control {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .layer-control-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .layer-control-header:hover {
+        background: linear-gradient(135deg, #7c8ff0 0%, #8a5bb0 100%);
+    }
+    
+    .layer-control-content {
+        padding: 10px;
+        display: block;
+    }
+    
+    .layer-control-content.hidden {
+        display: none;
+    }
+    
+    .layer-control label {
+        display: block;
+        margin-bottom: 8px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .layer-control input[type="checkbox"] {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+    
+    .layer-control hr {
+        margin: 10px 0;
+    }
+    
+    .toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .toggle-icon.rotated {
+        transform: rotate(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-map-marked-alt"></i> {{ t.interactive_map }}</h2>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body" style="position: relative;">
+                    <div id="map"></div>
+                    <!-- Layer Control -->
+                    <div class="layer-control">
+                        <div class="layer-control-header" id="layerControlToggle">
+                            <div style="font-weight: bold;">
+                                <i class="fas fa-layer-group"></i> 
+                                {% if current_lang == 'id' %}Layer Peta{% else %}Map Layers{% endif %}
+                            </div>
+                            <i class="fas fa-chevron-up toggle-icon" id="toggleIcon"></i>
+                        </div>
+                        <div class="layer-control-content" id="layerControlContent">
+                            <label>
+                                <input type="checkbox" id="toggleMarkers" checked>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                {% if current_lang == 'id' %}Titik Stasiun{% else %}Station Points{% endif %}
+                            </label>
+                            <label>
+                                <input type="checkbox" id="toggleHeatmap">
+                                <i class="fas fa-fire"></i> 
+                                {% if current_lang == 'id' %}Prediksi Spasial (Heatmap){% else %}Spatial Prediction (Heatmap){% endif %}
+                            </label>
+                            <hr>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                {% if current_lang == 'id' %}
+                                    Heatmap menginterpolasi data untuk area di antara titik kota
+                                {% else %}
+                                    Heatmap interpolates data for areas between city points
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ t.air_quality_legend }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2" style="background-color: #00e400; border-radius: 5px;">
+                                <strong>{{ t.good }}</strong><br>
+                                <small>0-15 μg/m³</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2" style="background-color: #ffff00; border-radius: 5px;">
+                                <strong>{{ t.moderate }}</strong><br>
+                                <small>15-35 μg/m³</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2 text-white" style="background-color: #ff7e00; border-radius: 5px;">
+                                <strong>{% if current_lang == 'id' %}Tidak Sehat-S{% else %}Unhealthy-S{% endif %}</strong><br>
+                                <small>35-55 μg/m³</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2 text-white" style="background-color: #ff0000; border-radius: 5px;">
+                                <strong>{{ t.unhealthy }}</strong><br>
+                                <small>55-150 μg/m³</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2 text-white" style="background-color: #8f3f97; border-radius: 5px;">
+                                <strong>{{ t.very_unhealthy }}</strong><br>
+                                <small>150-250 μg/m³</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-2">
+                            <div class="p-2 text-white" style="background-color: #7e0023; border-radius: 5px;">
+                                <strong>{{ t.hazardous }}</strong><br>
+                                <small>250+ μg/m³</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize map
+    const map = L.map('map').setView([-2.5, 118.0], 5);
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Color mapping - support both English and Indonesian
+    const colorMap = {
+        // English
+        'Good': '#00e400',
+        'Moderate': '#ffff00',
+        'Unhealthy for Sensitive Groups': '#ff7e00',
+        'Unhealthy': '#ff0000',
+        'Very Unhealthy': '#8f3f97',
+        'Hazardous': '#7e0023',
+        // Indonesian
+        'Baik': '#00e400',
+        'Sedang': '#ffff00',
+        'Tidak Sehat untuk Kelompok Sensitif': '#ff7e00',
+        'Tidak Sehat': '#ff0000',
+        'Sangat Tidak Sehat': '#8f3f97',
+        'Berbahaya': '#7e0023'
+    };
+
+    // Create marker cluster group with custom options
+    const markers = L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        maxClusterRadius: 80,
+        iconCreateFunction: function(cluster) {
+            const childCount = cluster.getChildCount();
+            let c = ' marker-cluster-';
+            if (childCount < 10) {
+                c += 'small';
+            } else if (childCount < 30) {
+                c += 'medium';
+            } else {
+                c += 'large';
+            }
+            
+            return new L.DivIcon({ 
+                html: '<div><span>' + childCount + '</span></div>', 
+                className: 'marker-cluster' + c, 
+                iconSize: new L.Point(40, 40) 
+            });
+        }
+    });
+
+    // Layer group for labels (shown at higher zoom levels)
+    const labelGroup = L.layerGroup().addTo(map);
+
+    // Heatmap layer (initially not on map)
+    let heatmapLayer = null;
+
+    // Fetch and display data
+    fetch('/api/map-data')
+        .then(response => response.json())
+        .then(data => {
+            // Prepare heatmap data
+            const heatmapData = [];
+            
+            data.forEach(city => {
+                // Use color from API (already correct), fallback to colorMap
+                const color = city.color || colorMap[city.category] || '#00e400';
+                
+                // Add circle marker to cluster group
+                const circle = L.circleMarker([city.lat, city.lon], {
+                    radius: 15,
+                    fillColor: color,
+                    color: color,
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                });
+
+                // Add popup
+                circle.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h6 style="margin: 0 0 10px 0;"><strong>${city.city}</strong></h6>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td><strong>PM2.5:</strong></td>
+                                <td>${city.pm25.toFixed(2)} μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PM10:</strong></td>
+                                <td>${city.pm10.toFixed(2)} μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td><strong>NO2:</strong></td>
+                                <td>${city.no2.toFixed(2)} μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <span style="display: inline-block; margin-top: 5px; padding: 5px 10px; background-color: ${color}; color: white; border-radius: 3px; font-weight: bold;">
+                                        ${city.category}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                `);
+
+                // Add marker to cluster group
+                markers.addLayer(circle);
+
+                // Add label (only visible at zoom level 7+)
+                const label = L.marker([city.lat, city.lon], {
+                    icon: L.divIcon({
+                        html: `<div style="font-size: 9pt; color: black; font-weight: bold; text-shadow: 1px 1px 2px white, -1px -1px 2px white;">${city.city}<br>${city.pm25.toFixed(1)}</div>`,
+                        className: 'city-label',
+                        iconSize: [100, 40]
+                    })
+                });
+                labelGroup.addLayer(label);
+
+                // Add to heatmap data [lat, lon, intensity]
+                // Use PM2.5 value directly for better visibility
+                // Scale: multiply by factor to make it more visible
+                const intensity = city.pm25 * 0.1; // Amplify the values
+                heatmapData.push([city.lat, city.lon, intensity]);
+            });
+
+            // Create heatmap layer with enhanced visibility
+            console.log('Heatmap data points:', heatmapData.length);
+            console.log('Sample heatmap data:', heatmapData.slice(0, 5));
+            
+            heatmapLayer = L.heatLayer(heatmapData, {
+                radius: 50,          // Increased from 35
+                blur: 35,            // Increased from 25
+                maxZoom: 8,          // Changed from 10
+                max: 5.0,            // Increased from 1.0 to accommodate amplified values
+                minOpacity: 0.4,     // Added minimum opacity
+                gradient: {
+                    0.0: '#00e400',  // Good - Green
+                    0.15: '#92d050', // Light green
+                    0.25: '#ffff00', // Moderate - Yellow
+                    0.4: '#ff7e00',  // Unhealthy-S - Orange
+                    0.6: '#ff0000',  // Unhealthy - Red
+                    0.8: '#8f3f97',  // Very Unhealthy - Purple
+                    1.0: '#7e0023'   // Hazardous - Dark Red
+                }
+            });
+            
+            console.log('Heatmap layer created:', heatmapLayer);
+
+            // Add cluster group to map initially
+            map.addLayer(markers);
+
+            // Show/hide labels based on zoom level
+            function updateLabels() {
+                if (map.getZoom() >= 7) {
+                    if (!map.hasLayer(labelGroup)) {
+                        map.addLayer(labelGroup);
+                    }
+                } else {
+                    if (map.hasLayer(labelGroup)) {
+                        map.removeLayer(labelGroup);
+                    }
+                }
+            }
+
+            // Initial label visibility check
+            updateLabels();
+
+            // Update labels on zoom
+            map.on('zoomend', updateLabels);
+
+            // Layer Control Toggle
+            document.getElementById('layerControlToggle').addEventListener('click', function() {
+                const content = document.getElementById('layerControlContent');
+                const icon = document.getElementById('toggleIcon');
+                
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    icon.classList.remove('rotated');
+                } else {
+                    content.classList.add('hidden');
+                    icon.classList.add('rotated');
+                }
+            });
+
+            // Layer toggle controls
+            document.getElementById('toggleMarkers').addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    map.addLayer(markers);
+                    if (map.getZoom() >= 7) {
+                        map.addLayer(labelGroup);
+                    }
+                } else {
+                    map.removeLayer(markers);
+                    map.removeLayer(labelGroup);
+                }
+            });
+
+            document.getElementById('toggleHeatmap').addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    map.addLayer(heatmapLayer);
+                } else {
+                    map.removeLayer(heatmapLayer);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading map data:', error);
+            alert('Failed to load map data. Please try again later.');
+        });
+</script>
+{% endblock %}

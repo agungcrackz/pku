@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Data & Models (akan di-generate di container)
+data/*.csv
+models/*.pkl
+models/*.h5
+models/*.json
+models/*.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+*.md
+!README.md
+
+# Tests
+tests/
+notebooks/
+
+# Misc
+.env
+*.log

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Prediksi Kualitas Udara Indonesia{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <!-- Leaflet.heat CSS (heatmap) -->
+    <style>
+        .leaflet-heatmap-layer {
+            opacity: 0.6;
+        }
+    </style>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js Time Adapter for time series -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-light: #764ba2;
+            --secondary-color: #f093fb;
+            --secondary-light: #f5576c;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-bg: #f9fafb;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --card-shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.25);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom, #f9fafb 0%, #e5e7eb 100%);
+            background-attachment: fixed;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Navbar Styling */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 1rem 0;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1030;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navbar-brand i {
+            animation: spin 3s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .nav-link {
+            position: relative;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            transition: var(--transition);
+            border-radius: 8px;
+            margin: 0 2px;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: white;
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link:hover::before {
+            width: 80%;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            animation: fadeInDown 0.3s ease;
+            z-index: 1050;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-item {
+            padding: 0.7rem 1.2rem;
+            transition: var(--transition);
+            border-radius: 8px;
+            margin: 4px 8px;
+        }
+        
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-color) 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        /* Card Styling */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            transition: var(--transition);
+            overflow: hidden;
+            background: white;
+        }
+        
+        .card::before {
+            display: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+        }
+        
+        .card-header {
+            border: none;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 1.2rem 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Stat Card */
+        .stat-card {
+            border-radius: 16px;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid var(--secondary-color);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: var(--transition);
+            opacity: 0;
+        }
+        
+        .stat-card:hover::after {
+            opacity: 1;
+            top: -30%;
+            right: -30%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 12px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Badge/AQI Badge */
+        .aqi-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            color: white;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+        
+        .aqi-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Badge Colors */
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .hero-section h1 {
+            font-weight: 700;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-section .lead {
+            font-size: 1.3rem;
+            font-weight: 300;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+        
+        /* Feature Icons */
+        .feature-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-color) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            transition: var(--transition);
+            display: inline-block;
+        }
+        
+        .feature-icon:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        /* Tables */
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+        }
+        
+        .table tbody tr {
+            transition: var(--transition);
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+            transform: scale(1.01);
+        }
+        
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            border-left: 4px solid;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+            color: white;
+            padding: 50px 0 30px;
+            margin-top: 80px;
+            position: relative;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--secondary-color) 50%, var(--primary-light) 100%);
+        }
+        
+        .footer h5, .footer h6 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .footer a {
+            transition: var(--transition);
+            display: inline-block;
+        }
+        
+        .footer a:hover {
+            transform: translateX(5px);
+            color: var(--secondary-color) !important;
+        }
+        
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        /* Scrollbar - Webkit browsers only */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #667eea var(--light-bg);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-color) 100%);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 50px 0;
+            }
+            
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .feature-icon {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* Smooth Transitions */
+        * {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-wind"></i> Air Quality ID
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home"></i> {{ t.home }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-chart-line"></i> {{ t.dashboard }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/map">
+                            <i class="fas fa-map-marked-alt"></i> {{ t.map }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/predict">
+                            <i class="fas fa-brain"></i> {{ t.predict }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/visualizations">
+                            <i class="fas fa-chart-bar"></i> {{ t.visualizations }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">
+                            <i class="fas fa-info-circle"></i> {{ t.about }}
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-language"></i> 
+                            {% if current_lang == 'id' %}🇮🇩 ID{% else %}🇬🇧 EN{% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="?lang=id">🇮🇩 Bahasa Indonesia</a></li>
+                            <li><a class="dropdown-item" href="?lang=en">🇬🇧 English</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h5><i class="fas fa-wind me-2"></i> Air Quality Indonesia</h5>
+                    <p class="mb-3">{{ t.system_description }}</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white fs-4"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-uppercase mb-3">{{ t.links }}</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-white text-decoration-none"><i class="fas fa-chevron-right me-2"></i>{{ t.home }}</a></li>
+                        <li class="mb-2"><a href="/dashboard" class="text-white text-decoration-none"><i class="fas fa-chevron-right me-2"></i>{{ t.dashboard }}</a></li>
+                        <li class="mb-2"><a href="/map" class="text-white text-decoration-none"><i class="fas fa-chevron-right me-2"></i>{{ t.map }}</a></li>
+                        <li class="mb-2"><a href="/predict" class="text-white text-decoration-none"><i class="fas fa-chevron-right me-2"></i>{{ t.predict }}</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase mb-3">{{ t.who_standards }}</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>PM2.5 :</strong> ≤15 μg/m³
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>PM10 :</strong> ≤45 μg/m³
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>NO2 :</strong> ≤25 μg/m³
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase mb-3">
+                        {% if current_lang == 'id' %}Kontak{% else %}Contact{% endif %}
+                    </h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2" style="word-break: break-all;">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:agungcrackz@gmail.com" class="text-white text-decoration-none">
+                                agungcrackz@gmail.com
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:+6289843091141" class="text-white text-decoration-none">
+                                +62 898 4309 141
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Jln. Veteran No. 4A-9A Binjai, Kec. Binjai Kota, Kota Binjai, Sumatera Utara - Indonesia
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-white my-4 opacity-25">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0">
+                        <i class="fas fa-copyright me-1"></i> 2026 Nexora Team. 
+                        {% if current_lang == 'id' %}Hak Cipta Dilindungi{% else %}All Rights Reserved{% endif %}.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">
+                        <i class="fas fa-robot me-1"></i> {{ t.powered_by }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- Leaflet.heat JS (heatmap) -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

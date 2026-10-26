@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.predict }} - Air Quality Indonesia{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-brain"></i> {{ t.predict if current_lang == 'id' else 'Air Quality Prediction' }}</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h"></i> {{ t.prediction_parameters }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/predict">
+                        <div class="mb-3">
+                            <label for="city" class="form-label">{{ t.select_city }}</label>
+                            <select class="form-select" id="city" name="city" required>
+                                {% for city in cities %}
+                                <option value="{{ city }}">{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Info:</strong> 
+                            {% if current_lang == 'id' %}
+                            Prediksi menggunakan data terbaru dan model machine learning yang telah di-train.
+                            {% else %}
+                            Prediction uses the latest data and trained machine learning models.
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-cogs"></i> {{ t.run_prediction }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot"></i> 
+                        {% if current_lang == 'id' %}Model ML{% else %}ML Models{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>{% if current_lang == 'id' %}Model Yang Digunakan:{% else %}Models Used:{% endif %}</h6>
+                    <ul>
+                        <li><strong>Random Forest</strong><br>
+                            <small>{% if current_lang == 'id' %}Ensemble learning untuk akurasi tinggi{% else %}Ensemble learning for high accuracy{% endif %}</small>
+                        </li>
+                        <li><strong>Gradient Boosting</strong><br>
+                            <small>{% if current_lang == 'id' %}Sequential learning untuk presisi{% else %}Sequential learning for precision{% endif %}</small>
+                        </li>
+                        <li><strong>LSTM</strong><br>
+                            <small>{% if current_lang == 'id' %}Deep learning untuk time series{% else %}Deep learning for time series{% endif %}</small>
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6>{% if current_lang == 'id' %}Fitur Yang Digunakan:{% else %}Features Used:{% endif %}</h6>
+                    <ul class="small">
+                        <li>{% if current_lang == 'id' %}Data historis polutan{% else %}Historical pollutant data{% endif %}</li>
+                        <li>{% if current_lang == 'id' %}Lag features (1-24 jam){% else %}Lag features (1-24 hours){% endif %}</li>
+                        <li>{% if current_lang == 'id' %}Rolling statistics{% else %}Rolling statistics{% endif %}</li>
+                        <li>{% if current_lang == 'id' %}Temporal features{% else %}Temporal features{% endif %}</li>
+                        <li>{% if current_lang == 'id' %}Lokasi geografis{% else %}Geographic location{% endif %}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> 
+                        {% if current_lang == 'id' %}Cara Kerja Prediksi{% else %}How Prediction Works{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-database fa-3x text-primary mb-2"></i>
+                            <h6>1. Data Collection</h6>
+                            <p class="small">
+                                {% if current_lang == 'id' %}
+                                Mengumpulkan data kualitas udara historis dari berbagai sumber
+                                {% else %}
+                                Collecting historical air quality data from various sources
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-cogs fa-3x text-primary mb-2"></i>
+                            <h6>2. Preprocessing</h6>
+                            <p class="small">
+                                {% if current_lang == 'id' %}
+                                Feature engineering dan normalisasi data untuk model ML
+                                {% else %}
+                                Feature engineering and data normalization for ML models
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-brain fa-3x text-primary mb-2"></i>
+                            <h6>3. Prediction</h6>
+                            <p class="small">
+                                {% if current_lang == 'id' %}
+                                Model ML memprediksi nilai PM2.5 untuk lokasi yang dipilih
+                                {% else %}
+                                ML models predict PM2.5 values for selected location
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-check-circle fa-3x text-primary mb-2"></i>
+                            <h6>4. Classification</h6>
+                            <p class="small">
+                                {% if current_lang == 'id' %}
+                                Klasifikasi hasil prediksi berdasarkan standar WHO
+                                {% else %}
+                                Classify prediction results based on WHO standards
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

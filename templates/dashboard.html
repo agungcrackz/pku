@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Air Quality Indonesia{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        transition: all 0.4s ease;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: rotate 15s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        letter-spacing: -1px;
+    }
+    
+    .table-hover tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table-hover tbody tr:hover {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { 
+            opacity: 1; 
+            transform: scale(1);
+        }
+        50% { 
+            opacity: 0.8; 
+            transform: scale(1.05);
+        }
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .stat-card-purple {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .stat-card-pink {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .stat-card-peach {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        color: #333;
+    }
+    
+    .stat-card-cyan {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        color: #333;
+    }
+    
+    .text-danger-custom {
+        color: #d63031;
+    }
+    
+    .text-success-custom {
+        color: #00b894;
+    }
+    
+    .alert-custom {
+        border-left: 5px solid #0dcaf0;
+    }
+    
+    .aqi-good { background-color: #00e400; }
+    .aqi-moderate { background-color: #ffff00; color: #000; }
+    .aqi-unhealthy-sensitive { background-color: #ff7e00; }
+    .aqi-unhealthy { background-color: #ff0000; }
+    .aqi-very-unhealthy { background-color: #8f3f97; }
+    .aqi-hazardous { background-color: #7e0023; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="mb-5">
+        <h2 class="fw-bold">
+            <i class="fas fa-chart-line me-3 text-primary"></i> 
+            {% if current_lang == 'id' %}Dashboard Kualitas Udara{% else %}Air Quality Dashboard{% endif %}
+        </h2>
+        <p class="text-muted lead">
+            {% if current_lang == 'id' %}Ringkasan statistik dan analisis kualitas udara real-time{% else %}Real-time air quality statistics and analysis summary{% endif %}
+        </p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card stat-card-purple h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-city fa-3x mb-3 pulse"></i>
+                    <h6 class="card-title text-uppercase fw-semibold">{{ t.total_cities }}</h6>
+                    <h2 class="stat-number mb-2">{{ stats.total_cities }}</h2>
+                    <small class="opacity-90">
+                        <i class="fas fa-map-pin me-1"></i>
+                        {% if current_lang == 'id' %}Kota dipantau{% else %}Cities monitored{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card stat-card-pink h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-wind fa-3x mb-3 pulse"></i>
+                    <h6 class="card-title text-uppercase fw-semibold">{{ t.avg_pm25 }}</h6>
+                    <h2 class="stat-number mb-2">{{ "%.1f"|format(stats.avg_pm25) }}</h2>
+                    <small class="opacity-90">
+                        <i class="fas fa-chart-area me-1"></i>μg/m³
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card stat-card-peach h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3 pulse text-danger"></i>
+                    <h6 class="card-title text-uppercase fw-bold">{{ t.cities_above_who }}</h6>
+                    <h2 class="stat-number text-danger-custom mb-2">{{ stats.cities_above_who }}</h2>
+                    <small>
+                        <i class="fas fa-building me-1"></i>
+                        {% if current_lang == 'id' %}Kota{% else %}Cities{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card stat-card-cyan h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-database fa-3x mb-3 pulse text-success"></i>
+                    <h6 class="card-title text-uppercase fw-bold">{{ t.total_records }}</h6>
+                    <h2 class="stat-number text-success-custom mb-2">{{ stats.total_records }}</h2>
+                    <small>
+                        <i class="fas fa-server me-1"></i>Records
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Update -->
+    <div class="alert alert-info alert-custom mb-4 border-0 shadow-sm">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-clock fa-2x me-3"></i>
+            <div>
+                <strong class="d-block">{{ t.last_update }}:</strong>
+                <span>{{ stats.last_update }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- City Data Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-table"></i> {{ t.air_quality_per_city }}</h5>
+                <div>
+                    <small class="me-3">
+                        <span id="cityRange">1-10</span> {% if current_lang == 'id' %}dari{% else %}of{% endif %} <span id="totalCities">{{ cities|length }}</span> kota
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ t.city }}</th>
+                            <th>PM2.5 (μg/m³)</th>
+                            <th>PM10 (μg/m³)</th>
+                            <th>NO2 (μg/m³)</th>
+                            <th>{{ t.status }}</th>
+                            <th>WHO Compliant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cityTableBody">
+                        {% for city in cities %}
+                        <tr class="city-row" data-index="{{ loop.index }}">
+                            <td><strong>{{ city.name }}</strong></td>
+                            <td>{{ city.pm25 }}</td>
+                            <td>{{ city.pm10 }}</td>
+                            <td>{{ city.no2 }}</td>
+                            <td>
+                                <span class="aqi-badge
+                                    {% if city.pm25 <= 15 %}aqi-good
+                                    {% elif city.pm25 <= 35 %}aqi-moderate
+                                    {% elif city.pm25 <= 55 %}aqi-unhealthy-sensitive
+                                    {% elif city.pm25 <= 150 %}aqi-unhealthy
+                                    {% elif city.pm25 <= 250 %}aqi-very-unhealthy
+                                    {% else %}aqi-hazardous
+                                    {% endif %}">
+                                    {{ city.category }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if city.pm25 <= 15 %}
+                                    <i class="fas fa-check-circle text-success"></i> {% if current_lang == 'id' %}Ya{% else %}Yes{% endif %}
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger"></i> {% if current_lang == 'id' %}Tidak{% else %}No{% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button id="prevBtn" class="btn btn-outline-primary" disabled>
+                    <i class="fas fa-chevron-left"></i> {% if current_lang == 'id' %}Sebelumnya{% else %}Previous{% endif %}
+                </button>
+                <div>
+                    <span>{% if current_lang == 'id' %}Halaman{% else %}Page{% endif %} <span id="currentPage">1</span> {% if current_lang == 'id' %}dari{% else %}of{% endif %} <span id="totalPages"></span></span>
+                </div>
+                <button id="nextBtn" class="btn btn-outline-primary">
+                    {% if current_lang == 'id' %}Selanjutnya{% else %}Next{% endif %} <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Time-Series Visualization Info Card -->
+    <div class="alert border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="row align-items-center">
+            <div class="col-md-1 text-center">
+                <i class="fas fa-chart-line fa-3x opacity-75"></i>
+            </div>
+            <div class="col-md-9">
+                <h5 class="mb-2 fw-bold">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {% if current_lang == 'id' %}
+                        Absennya Visualisasi Tren Waktu (Time-Series)
+                    {% else %}
+                        Absence of Time-Series Trend Visualization
+                    {% endif %}
+                </h5>
+                <p class="mb-0">
+                    {% if current_lang == 'id' %}
+                        Dashboard hanya menyediakan <strong>bar chart</strong> (perbandingan antar kota) dan <strong>pie chart</strong> (proporsi status) yang sifatnya statis untuk satu waktu. 
+                        Mengingat sistem ini berbasis <strong>machine learning</strong> (prediksi), sangat fatal jika tidak ada grafik garis historis (<em>line chart</em>) yang menunjukkan tren perubahan dari waktu ke waktu sekaligus memvisualisasikan hasil <strong>forecasting</strong> ke masa depan.
+                    {% else %}
+                        The Dashboard only provides <strong>bar chart</strong> (city comparison) and <strong>pie chart</strong> (status proportion) which are static for one time point. 
+                        Given this system is <strong>machine learning</strong> based (prediction), it would be critical to miss historical line charts showing trends over time along with <strong>forecasting</strong> visualization for the future.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-2 text-center">
+                <a href="{{ url_for('visualizations') }}" class="btn btn-light btn-lg shadow-sm">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    {% if current_lang == 'id' %}Lihat Visualisasi{% else %}View Visualization{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- City Comparison Charts -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> 
+                        {% if current_lang == 'id' %}PM2.5 per Kota (Snapshot){% else %}PM2.5 by City (Snapshot){% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="cityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie"></i> 
+                        {% if current_lang == 'id' %}Distribusi Kualitas Udara{% else %}Air Quality Distribution{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="cityData" type="application/json">{{ cities | tojson | safe }}</script>
+<script>
+    // Pagination for City Table
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let totalRows = 0;
+    let totalPages = 0;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        setupPagination();
+    });
+    
+    function setupPagination() {
+        const rows = document.querySelectorAll('.city-row');
+        totalRows = rows.length;
+        totalPages = Math.ceil(totalRows / rowsPerPage);
+        
+        document.getElementById('totalPages').textContent = totalPages;
+        document.getElementById('totalCities').textContent = totalRows;
+        
+        showPage(1);
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+    }
+    
+    function showPage(page) {
+        currentPage = page;
+        const rows = document.querySelectorAll('.city-row');
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        
+        rows.forEach((row, index) => {
+            if (index >= start && index < end) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update UI
+        document.getElementById('currentPage').textContent = currentPage;
+        document.getElementById('cityRange').textContent = `${start + 1}-${Math.min(end, totalRows)}`;
+        
+        // Enable/disable buttons
+        document.getElementById('prevBtn').disabled = (currentPage === 1);
+        document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+    }
+    
+    // City Bar Chart
+    var cityData = JSON.parse(document.getElementById('cityData').textContent);
+    var cityLabels = cityData.map(function(c) { return c.name; });
+    var cityPM25 = cityData.map(function(c) { return c.pm25; });
+    var cityColors = cityData.map(function(c) { return c.color; });
+
+    var cityCtx = document.getElementById('cityChart').getContext('2d');
+    var cityChart = new Chart(cityCtx, {
+        type: 'bar',
+        data: {
+            labels: cityLabels,
+            datasets: [{
+                label: 'PM2.5 (μg/m³)',
+                data: cityPM25,
+                backgroundColor: cityColors,
+                borderColor: cityColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'PM2.5 (μg/m³)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Pie Chart - Air Quality Distribution
+    var categories = {};
+    cityData.forEach(function(c) {
+        categories[c.category] = (categories[c.category] || 0) + 1;
+    });
+
+    // Define color mapping for each category
+    var categoryColors = {
+        'Baik': '#00e400',              // Green
+        'Sedang': '#ffff00',            // Yellow
+        'Tidak Sehat': '#ff7e00',       // Orange
+        'Sangat Tidak Sehat': '#ff0000', // Red
+        'Berbahaya': '#8f3f97'          // Purple
+    };
+
+    // Build labels, data, and colors in correct order
+    var pieLabels = [];
+    var pieData = [];
+    var pieColors = [];
+    
+    for (var category in categories) {
+        pieLabels.push(category);
+        pieData.push(categories[category]);
+        pieColors.push(categoryColors[category] || '#cccccc'); // Default gray if unknown
+    }
+
+    var pieCtx = document.getElementById('pieChart').getContext('2d');
+    var pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: pieColors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

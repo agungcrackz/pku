@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .feature-card {
+        position: relative;
+        height: 100%;
+        transition: all 0.4s ease;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+    
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+    
+    .feature-card:hover .feature-icon {
+        animation: bounce 0.6s ease;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .stats-number {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        animation: countUp 2s ease-out;
+    }
+    
+    @keyframes countUp {
+        from { opacity: 0; transform: scale(0.5); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .air-quality-card {
+        border-radius: 16px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .air-quality-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .air-quality-card:hover::after {
+        left: 100%;
+    }
+    
+    .pulse-icon {
+        animation: pulse-animation 2s infinite;
+    }
+    
+    @keyframes pulse-animation {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .city-badge {
+        display: inline-block;
+        padding: 1.2rem 1.5rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin: 0.3rem;
+        color: #333;
+        font-weight: 600;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .city-badge:hover {
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .city-badge i {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        color: #667eea;
+        transition: color 0.3s ease;
+    }
+    
+    .city-badge:hover i {
+        color: white;
+    }
+    
+    .tech-badge {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #667eea;
+        padding: 1.5rem;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    
+    .tech-badge:hover {
+        transform: translateX(10px) translateY(-5px);
+        border-left-width: 7px;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.25);
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .hero-section {
+        position: relative;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center position-relative">
+        <div style="animation: fadeInUp 0.8s ease;">
+            <h1 class="display-3 mb-4 fw-bold">
+                <i class="fas fa-wind pulse-icon"></i> 
+                {% if current_lang == 'id' %}
+                Prediksi Kualitas Udara Indonesia
+                {% else %}
+                Indonesia Air Quality Prediction
+                {% endif %}
+            </h1>
+            <p class="lead fs-4 mb-4" style="animation: fadeInUp 1s ease;">{{ t.system_description }}</p>
+            <div class="mt-5" style="animation: fadeInUp 1.2s ease;">
+                <a href="/dashboard" class="btn btn-light btn-lg me-3 px-5 py-3">
+                    <i class="fas fa-chart-line me-2"></i> {{ t.view_dashboard }}
+                </a>
+                <a href="/predict" class="btn btn-outline-light btn-lg px-5 py-3">
+                    <i class="fas fa-brain me-2"></i> 
+                    {% if current_lang == 'id' %}Mulai Prediksi{% else %}Start Prediction{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features Section -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-map-marked-alt feature-icon pulse-icon"></i>
+                    <h4 class="fw-bold mb-3">{% if current_lang == 'id' %}Pemetaan Real-time{% else %}Real-time Mapping{% endif %}</h4>
+                    <p class="text-muted">
+                        {% if current_lang == 'id' %}
+                        Visualisasi kualitas udara di 87 kota Indonesia dengan peta interaktif dan heatmap prediksi spasial
+                        {% else %}
+                        Visualize air quality in 87 Indonesian cities with interactive maps and spatial prediction heatmap
+                        {% endif %}
+                    </p>
+                    <a href="/map" class="btn btn-primary mt-3 px-4">
+                        <i class="fas fa-arrow-right me-2"></i>{{ t.view_map }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-robot feature-icon pulse-icon"></i>
+                    <h4 class="fw-bold mb-3">Machine Learning</h4>
+                    <p class="text-muted">
+                        {% if current_lang == 'id' %}
+                        Prediksi akurat menggunakan Random Forest, Gradient Boosting, dan LSTM
+                        {% else %}
+                        Accurate predictions using Random Forest, Gradient Boosting, and LSTM
+                        {% endif %}
+                    </p>
+                    <a href="/predict" class="btn btn-primary mt-3 px-4">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        {% if current_lang == 'id' %}Coba Prediksi{% else %}Try Prediction{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-chart-line feature-icon pulse-icon"></i>
+                    <h4 class="fw-bold mb-3">{% if current_lang == 'id' %}Analisis WHO{% else %}WHO Analysis{% endif %}</h4>
+                    <p class="text-muted">
+                        {% if current_lang == 'id' %}
+                        Compliance tracking terhadap standar kualitas udara WHO
+                        {% else %}
+                        Compliance tracking against WHO air quality standards
+                        {% endif %}
+                    </p>
+                    <a href="/dashboard" class="btn btn-primary mt-3 px-4">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        {% if current_lang == 'id' %}Lihat Analisis{% else %}View Analysis{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Air Quality Standards -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-heartbeat"></i> 
+                        {% if current_lang == 'id' %}Standar WHO - Kualitas Udara{% else %}WHO Standards - Air Quality{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>{% if current_lang == 'id' %}Parameter Utama:{% else %}Main Parameters:{% endif %}</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>PM2.5</strong>
+                                    <span class="badge bg-primary rounded-pill">≤15 μg/m³ (annual)</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>PM10</strong>
+                                    <span class="badge bg-primary rounded-pill">≤45 μg/m³ (annual)</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>NO2</strong>
+                                    <span class="badge bg-primary rounded-pill">≤25 μg/m³ (annual)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>
+                                {% if current_lang == 'id' %}Kategori Kualitas Udara (PM2.5):{% else %}Air Quality Categories (PM2.5):{% endif %}
+                            </h5>
+                            <ul class="list-group">
+                                <li class="list-group-item" style="background-color: #00e400;">
+                                    <strong>{{ t.good }}:</strong> 0-15 μg/m³
+                                </li>
+                                <li class="list-group-item" style="background-color: #ffff00; color: #000;">
+                                    <strong>{{ t.moderate }}:</strong> 15-35 μg/m³
+                                </li>
+                                <li class="list-group-item" style="background-color: #ff7e00; color: white;">
+                                    <strong>{{ t.unhealthy_sensitive }}:</strong> 35-55 μg/m³
+                                </li>
+                                <li class="list-group-item" style="background-color: #ff0000; color: white;">
+                                    <strong>{{ t.unhealthy }}:</strong> 55-150 μg/m³
+                                </li>
+                                <li class="list-group-item" style="background-color: #8f3f97; color: white;">
+                                    <strong>{{ t.very_unhealthy }}:</strong> 150+ μg/m³
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cities Covered -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold text-center mb-2">
+                <i class="fas fa-city me-2" style="color: #667eea;"></i> 
+                {{ t.cities_monitored }}
+            </h3>
+            <p class="text-center text-muted lead mb-5">
+                {% if current_lang == 'id' %}
+                Sistem memantau 87 kota di 38 provinsi Indonesia
+                {% else %}
+                System monitors 87 cities across 38 provinces in Indonesia
+                {% endif %}
+            </p>
+            
+            <div class="alert alert-info border-0 shadow-sm text-center mb-4">
+                <i class="fas fa-map-marked-alt fa-2x mb-3" style="color: #667eea;"></i>
+                <h5 class="mb-2 fw-bold">{% if current_lang == 'id' %}Cakupan Nasional Lengkap{% else %}Complete National Coverage{% endif %}</h5>
+                <p class="mb-0">
+                    {% if current_lang == 'id' %}
+                    Dari Sabang sampai Merauke - monitoring real-time di semua wilayah Indonesia
+                    {% else %}
+                    From Sabang to Merauke - real-time monitoring across all regions of Indonesia
+                    {% endif %}
+                </p>
+                <a href="/about" class="btn btn-primary mt-3">
+                    <i class="fas fa-list me-2"></i>
+                    {% if current_lang == 'id' %}Lihat Semua Kota{% else %}View All Cities{% endif %}
+                </a>
+            </div>
+            
+            <p class="text-center text-muted small">
+                {% if current_lang == 'id' %}
+                <strong>Contoh kota yang dipantau:</strong>
+                {% else %}
+                <strong>Sample monitored cities:</strong>
+                {% endif %}
+            </p>
+            
+            <div class="row text-center g-3 justify-content-center">
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Jakarta</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Surabaya</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Bandung</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Medan</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Semarang</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Makassar</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Palembang</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Tangerang</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Depok</strong>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="city-badge">
+                        <i class="fas fa-building fa-2x mb-2 d-block"></i>
+                        <strong>Bekasi</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold text-center mb-2">
+                <i class="fas fa-cogs me-2" style="color: #667eea;"></i>
+                {% if current_lang == 'id' %}Teknologi yang Digunakan{% else %}Technology Used{% endif %}
+            </h3>
+            <p class="text-center text-muted mb-5">
+                {% if current_lang == 'id' %}
+                Dibangun dengan teknologi modern dan framework terkini
+                {% else %}
+                Built with modern technology and latest frameworks
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="col-12">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="tech-badge">
+                        <h5 class="fw-bold mb-3" style="color: #667eea;">
+                            <i class="fas fa-brain me-2"></i>Machine Learning
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Random Forest Regressor
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Gradient Boosting
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                LSTM Neural Network
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tech-badge">
+                        <h5 class="fw-bold mb-3" style="color: #667eea;">
+                            <i class="fas fa-chart-line me-2"></i>Data Processing
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Pandas & NumPy
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Scikit-learn
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                TensorFlow/Keras
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="tech-badge">
+                        <h5 class="fw-bold mb-3" style="color: #667eea;">
+                            <i class="fas fa-globe me-2"></i>Visualization
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Plotly & Matplotlib
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Folium (Maps)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle me-2" style="color: #10b981;"></i>
+                                Chart.js
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Tentang - Air Quality Indonesia{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-info-circle"></i> {{ t.about_title }}</h2>
+    
+    <!-- Main Description -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4>
+                        {% if current_lang == 'id' %}
+                        Sistem Prediksi dan Pemetaan Kualitas Udara Indonesia
+                        {% else %}
+                        Indonesia Air Quality Prediction and Mapping System
+                        {% endif %}
+                    </h4>
+                    <p class="lead">
+                        {% if current_lang == 'id' %}
+                        Platform berbasis Machine Learning untuk memprediksi dan memetakan kualitas udara di Indonesia 
+                        menggunakan standar WHO (World Health Organization).
+                        {% else %}
+                        Machine Learning-based platform for predicting and mapping air quality in Indonesia 
+                        using WHO (World Health Organization) standards.
+                        {% endif %}
+                    </p>
+                    <hr>
+                    <p>
+                        {% if current_lang == 'id' %}
+                        Sistem ini dikembangkan untuk membantu masyarakat memantau kualitas udara di kota-kota besar Indonesia 
+                        dan memberikan prediksi berbasis data historis menggunakan teknologi Machine Learning terkini.
+                        {% else %}
+                        This system was developed to help people monitor air quality in major Indonesian cities 
+                        and provide predictions based on historical data using modern Machine Learning technology.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> {{ t.main_features }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Pemetaan Interaktif{% else %}Interactive Mapping{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Visualisasi real-time kualitas udara di 87 kota di 38 provinsi Indonesia dengan peta interaktif, marker clustering, dan heatmap prediksi spasial.
+                                {% else %}
+                                Real-time air quality visualization in 87 cities across 38 Indonesian provinces with interactive maps, marker clustering, and spatial prediction heatmap.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Prediksi ML{% else %}ML Prediction{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Tiga model machine learning: Random Forest, Gradient Boosting, dan LSTM Neural Network.
+                                {% else %}
+                                Three machine learning models: Random Forest, Gradient Boosting, and LSTM Neural Network.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Standar WHO{% else %}WHO Standards{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Compliance tracking terhadap standar kualitas udara WHO untuk PM2.5, PM10, NO2, dan lainnya.
+                                {% else %}
+                                Compliance tracking against WHO air quality standards for PM2.5, PM10, NO2, and more.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Dashboard Komprehensif{% else %}Comprehensive Dashboard{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Analisis statistik lengkap dengan grafik dan tabel interaktif.
+                                {% else %}
+                                Complete statistical analysis with interactive charts and tables.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Rekomendasi Kesehatan{% else %}Health Recommendations{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Saran aktivitas berdasarkan kondisi kualitas udara saat ini.
+                                {% else %}
+                                Activity suggestions based on current air quality conditions.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {% if current_lang == 'id' %}Data Historis{% else %}Historical Data{% endif %}
+                            </h6>
+                            <p>
+                                {% if current_lang == 'id' %}
+                                Analisis tren kualitas udara dari data historis 90 hari.
+                                {% else %}
+                                Air quality trend analysis from 90 days of historical data.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-code"></i> {{ t.technology }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Backend</h6>
+                            <ul>
+                                <li>Python 3.8+</li>
+                                <li>Flask Web Framework</li>
+                                <li>Pandas & NumPy</li>
+                                <li>Scikit-learn</li>
+                                <li>TensorFlow/Keras</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Frontend</h6>
+                            <ul>
+                                <li>Bootstrap 5</li>
+                                <li>Chart.js</li>
+                                <li>Leaflet.js (Maps)</li>
+                                <li>Font Awesome Icons</li>
+                                <li>Responsive Design</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Data & ML</h6>
+                            <ul>
+                                <li>Random Forest Regressor</li>
+                                <li>Gradient Boosting</li>
+                                <li>LSTM Neural Network</li>
+                                <li>Feature Engineering</li>
+                                <li>Time Series Analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WHO Standards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> {{ t.who_standards }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        {% if current_lang == 'id' %}
+                        World Health Organization (WHO) telah menetapkan pedoman kualitas udara untuk melindungi kesehatan publik. 
+                        Sistem ini menggunakan standar WHO sebagai benchmark utama.
+                        {% else %}
+                        The World Health Organization (WHO) has established air quality guidelines to protect public health. 
+                        This system uses WHO standards as the main benchmark.
+                        {% endif %}
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% if current_lang == 'id' %}Polutan{% else %}Pollutant{% endif %}</th>
+                                    <th>{% if current_lang == 'id' %}Standar WHO{% else %}WHO Standard{% endif %}</th>
+                                    <th>{% if current_lang == 'id' %}Periode{% else %}Period{% endif %}</th>
+                                    <th>{% if current_lang == 'id' %}Dampak Kesehatan{% else %}Health Impact{% endif %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>PM2.5</strong></td>
+                                    <td>15 μg/m³</td>
+                                    <td>Annual mean</td>
+                                    <td>
+                                        {% if current_lang == 'id' %}
+                                        Penyakit kardiovaskular, respirasi
+                                        {% else %}
+                                        Cardiovascular, respiratory diseases
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PM10</strong></td>
+                                    <td>45 μg/m³</td>
+                                    <td>Annual mean</td>
+                                    <td>
+                                        {% if current_lang == 'id' %}
+                                        Iritasi saluran pernapasan
+                                        {% else %}
+                                        Respiratory tract irritation
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NO2</strong></td>
+                                    <td>25 μg/m³</td>
+                                    <td>Annual mean</td>
+                                    <td>
+                                        {% if current_lang == 'id' %}
+                                        Asma, infeksi pernapasan
+                                        {% else %}
+                                        Asthma, respiratory infections
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SO2</strong></td>
+                                    <td>40 μg/m³</td>
+                                    <td>24-hour mean</td>
+                                    <td>
+                                        {% if current_lang == 'id' %}
+                                        Gangguan pernapasan
+                                        {% else %}
+                                        Respiratory problems
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>O3</strong></td>
+                                    <td>100 μg/m³</td>
+                                    <td>8-hour mean</td>
+                                    <td>
+                                        {% if current_lang == 'id' %}
+                                        Masalah pernapasan, asma
+                                        {% else %}
+                                        Respiratory problems, asthma
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cities Coverage -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> {{ t.cities_monitored }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h5 class="mb-2">
+                            <i class="fas fa-globe-asia"></i> 
+                            {% if current_lang == 'id' %}
+                            <strong>Coverage Nasional Lengkap: 87 Kota di 38 Provinsi Indonesia</strong>
+                            {% else %}
+                            <strong>Complete National Coverage: 87 Cities Across 38 Indonesian Provinces</strong>
+                            {% endif %}
+                        </h5>
+                        <p class="mb-0">
+                            {% if current_lang == 'id' %}
+                            Dari Sabang sampai Merauke - sistem pertama di Indonesia dengan monitoring komprehensif seluruh provinsi!
+                            {% else %}
+                            From Sabang to Merauke - first system in Indonesia with comprehensive monitoring across all provinces!
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- SUMATERA -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        {% if current_lang == 'id' %}SUMATERA{% else %}SUMATRA{% endif %} (10 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>Aceh:</strong> Banda Aceh, Lhokseumawe</li>
+                                        <li class="mb-1">🟢 <strong>Sumatera Utara:</strong> Medan, Binjai, Pematangsiantar, Tebing Tinggi</li>
+                                        <li class="mb-1">🟢 <strong>Sumatera Barat:</strong> Padang, Bukittinggi, Payakumbuh</li>
+                                        <li class="mb-1">🟢 <strong>Riau:</strong> Pekanbaru, Dumai</li>
+                                        <li class="mb-1">🟢 <strong>Kepulauan Riau:</strong> Tanjung Pinang, Batam</li>
+                                        <li class="mb-1">🟢 <strong>Jambi:</strong> Jambi</li>
+                                        <li class="mb-1">🟢 <strong>Sumatera Selatan:</strong> Palembang, Lubuklinggau</li>
+                                        <li class="mb-1">🟢 <strong>Bengkulu:</strong> Bengkulu</li>
+                                        <li class="mb-1">🟢 <strong>Lampung:</strong> Bandar Lampung, Metro</li>
+                                        <li>🟢 <strong>Bangka Belitung:</strong> Pangkal Pinang</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- JAWA -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        {% if current_lang == 'id' %}JAWA{% else %}JAVA{% endif %} (6 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>DKI Jakarta:</strong> Jakarta Pusat, Utara, Selatan, Timur, Barat</li>
+                                        <li class="mb-1">🟢 <strong>Jawa Barat:</strong> Bandung, Bekasi, Depok, Bogor, Cimahi, Tasikmalaya, Cirebon, Sukabumi</li>
+                                        <li class="mb-1">🟢 <strong>Jawa Tengah:</strong> Semarang, Surakarta, Salatiga, Tegal, Pekalongan, Magelang</li>
+                                        <li class="mb-1">🟢 <strong>DI Yogyakarta:</strong> Yogyakarta</li>
+                                        <li class="mb-1">🟢 <strong>Jawa Timur:</strong> Surabaya, Malang, Kediri, Blitar, Mojokerto, Madiun, Pasuruan, Probolinggo</li>
+                                        <li>🟢 <strong>Banten:</strong> Serang, Tangerang, Tangerang Selatan, Cilegon</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- KALIMANTAN -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        {% if current_lang == 'id' %}KALIMANTAN{% else %}BORNEO{% endif %} (5 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>Kalimantan Barat:</strong> Pontianak, Singkawang</li>
+                                        <li class="mb-1">🟢 <strong>Kalimantan Tengah:</strong> Palangkaraya</li>
+                                        <li class="mb-1">🟢 <strong>Kalimantan Selatan:</strong> Banjarmasin, Banjarbaru</li>
+                                        <li class="mb-1">🟢 <strong>Kalimantan Timur:</strong> Samarinda, Balikpapan, Bontang</li>
+                                        <li>🟢 <strong>Kalimantan Utara:</strong> Tanjung Selor, Tarakan</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SULAWESI -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        {% if current_lang == 'id' %}SULAWESI{% else %}CELEBES{% endif %} (6 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>Sulawesi Utara:</strong> Manado, Bitung, Tomohon</li>
+                                        <li class="mb-1">🟢 <strong>Sulawesi Tengah:</strong> Palu</li>
+                                        <li class="mb-1">🟢 <strong>Sulawesi Selatan:</strong> Makassar, Parepare, Palopo</li>
+                                        <li class="mb-1">🟢 <strong>Sulawesi Tenggara:</strong> Kendari, Baubau</li>
+                                        <li class="mb-1">🟢 <strong>Gorontalo:</strong> Gorontalo</li>
+                                        <li>🟢 <strong>Sulawesi Barat:</strong> Mamuju</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- BALI & NUSA TENGGARA -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        BALI & NUSA TENGGARA (3 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>Bali:</strong> Denpasar</li>
+                                        <li class="mb-1">🟢 <strong>Nusa Tenggara Barat:</strong> Mataram, Bima</li>
+                                        <li>🟢 <strong>Nusa Tenggara Timur:</strong> Kupang</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- MALUKU & PAPUA -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-map-marked-alt"></i> 
+                                        MALUKU & PAPUA (8 provinsi)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">🟢 <strong>Maluku:</strong> Ambon, Tual</li>
+                                        <li class="mb-1">🟢 <strong>Maluku Utara:</strong> Ternate, Tidore</li>
+                                        <li class="mb-1">🟢 <strong>Papua:</strong> Jayapura</li>
+                                        <li class="mb-1">🟢 <strong>Papua Barat:</strong> Manokwari</li>
+                                        <li class="mb-1">🟢 <strong>Papua Tengah:</strong> Nabire</li>
+                                        <li class="mb-1">🟢 <strong>Papua Pegunungan:</strong> Wamena</li>
+                                        <li class="mb-1">🟢 <strong>Papua Selatan:</strong> Merauke</li>
+                                        <li>🟢 <strong>Papua Barat Daya:</strong> Sorong</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> {{ t.disclaimer }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>{% if current_lang == 'id' %}Penting{% else %}Important{% endif %}:</strong> 
+                        {{ t.disclaimer_text }}
+                    </p>
+                    <p class="mb-0">
+                        {% if current_lang == 'id' %}
+                        Untuk keputusan kesehatan yang kritis, selalu konsultasikan dengan sumber resmi seperti BMKG, 
+                        Kementerian Kesehatan, atau profesional kesehatan.
+                        {% else %}
+                        For critical health decisions, always consult official sources such as BMKG, 
+                        Ministry of Health, or health professionals.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

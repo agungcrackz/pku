@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+
+{% block title %}Visualisasi - Air Quality Indonesia{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        <i class="fas fa-chart-bar"></i> 
+        {% if current_lang == 'id' %}Visualisasi Data Kualitas Udara{% else %}Air Quality Data Visualization{% endif %}
+    </h2>
+    
+    <!-- City Selector -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <label for="citySelect" class="form-label">
+                        {% if current_lang == 'id' %}Pilih Kota untuk Time Series:{% else %}Select City for Time Series:{% endif %}
+                    </label>
+                    <select class="form-select" id="citySelect">
+                        <option value="" disabled>
+                            {% if current_lang == 'id' %}-- Memuat kota... --{% else %}-- Loading cities... --{% endif %}
+                        </option>
+                    </select>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        {% if current_lang == 'id' %}87 kota di 38 provinsi tersedia{% else %}87 cities across 38 provinces available{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Series Charts: Historical vs Forecast -->
+    <div class="row mb-4">
+        <!-- Historical Trend Chart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-history"></i> 
+                        {% if current_lang == 'id' %}Tren Historis (7 Hari){% else %}Historical Trend (7 Days){% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="historicalChart" height="100"></canvas>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            {% if current_lang == 'id' %}
+                            Data aktual 7 hari terakhir | Garis merah: WHO limit 15 μg/m³
+                            {% else %}
+                            Actual data last 7 days | Red line: WHO limit 15 μg/m³
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Forecast Chart (ML) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-brain"></i> 
+                        {% if current_lang == 'id' %}Forecast ML (24 Jam){% else %}ML Forecast (24 Hours){% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="forecastChart" height="100"></canvas>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-robot"></i>
+                            {% if current_lang == 'id' %}
+                            Prediksi Machine Learning 24 jam kedepan | Model: Ensemble (RF + GB + LSTM)
+                            {% else %}
+                            Machine Learning prediction next 24 hours | Model: Ensemble (RF + GB + LSTM)
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- City Comparison Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-city"></i> 
+                        {% if current_lang == 'id' %}Perbandingan PM2.5 Antar Kota{% else %}PM2.5 Comparison Between Cities{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="cityComparisonChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> 
+                        {% if current_lang == 'id' %}Tentang Grafik{% else %}About Charts{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>
+                        {% if current_lang == 'id' %}Time Series Chart{% else %}Time Series Chart{% endif %}
+                    </h6>
+                    <p>
+                        {% if current_lang == 'id' %}
+                        Menampilkan tren PM2.5 selama 7 hari terakhir untuk kota yang dipilih. Garis merah putus-putus menunjukkan standar WHO (15 μg/m³).
+                        {% else %}
+                        Shows PM2.5 trends over the last 7 days for the selected city. The red dashed line indicates WHO standard (15 μg/m³).
+                        {% endif %}
+                    </p>
+                    
+                    <h6>
+                        {% if current_lang == 'id' %}City Comparison Chart{% else %}City Comparison Chart{% endif %}
+                    </h6>
+                    <p>
+                        {% if current_lang == 'id' %}
+                        Membandingkan rata-rata PM2.5 antar kota. Warna bar menunjukkan kategori kualitas udara.
+                        {% else %}
+                        Compares average PM2.5 between cities. Bar colors indicate air quality category.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-palette"></i> 
+                        {% if current_lang == 'id' %}Legenda Warna{% else %}Color Legend{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #00e400;">{{ t.good }} (0-15)</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #ffff00; color: black;">{{ t.moderate }} (15-35)</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #ff7e00;">{{ t.unhealthy_sensitive }} (35-55)</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #ff0000;">{{ t.unhealthy }} (55-150)</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #8f3f97;">{{ t.very_unhealthy }} (150+)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let historicalChart;
+    let forecastChart;
+    let cityComparisonChart;
+
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCityList();
+    });
+    
+    function loadCityList() {
+        // Get unique cities from city comparison API
+        fetch('/api/city-comparison')
+            .then(response => response.json())
+            .then(data => {
+                const citySelect = document.getElementById('citySelect');
+                citySelect.innerHTML = ''; // Clear loading message
+                
+                // Add cities to dropdown
+                data.cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+                
+                // Load first city by default
+                if (data.cities.length > 0) {
+                    citySelect.value = data.cities[0];
+                    loadHistoricalChart(data.cities[0]);
+                    loadForecastChart(data.cities[0]);
+                }
+                
+                loadCityComparisonData();
+                
+                // Event listener for city selection
+                citySelect.addEventListener('change', function() {
+                    loadHistoricalChart(this.value);
+                    loadForecastChart(this.value);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading city list:', error);
+                const citySelect = document.getElementById('citySelect');
+                citySelect.innerHTML = '<option value="">Error loading cities</option>';
+            });
+    }
+
+    // Historical Chart (Past 7 days)
+    function loadHistoricalChart(city) {
+        fetch(`/api/trend-forecast/${city}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Historical data received:', data);
+                
+                if (historicalChart) {
+                    historicalChart.destroy();
+                }
+                
+                const ctx = document.getElementById('historicalChart').getContext('2d');
+                
+                // Convert timestamps to Date objects for Chart.js
+                const historicalData = data.historical_pm25.map((val, idx) => ({
+                    x: new Date(data.historical_timestamps[idx]),
+                    y: val
+                }));
+                
+                const whoData = data.historical_pm25.map((val, idx) => ({
+                    x: new Date(data.historical_timestamps[idx]),
+                    y: 15
+                }));
+                
+                console.log('Historical data points:', historicalData.length);
+                console.log('First point:', historicalData[0]);
+                console.log('Last point:', historicalData[historicalData.length - 1]);
+                
+                historicalChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: '{% if current_lang == "id" %}PM2.5 Aktual{% else %}Actual PM2.5{% endif %}',
+                                data: historicalData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 2,
+                                pointHoverRadius: 5,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'WHO Standard',
+                                data: whoData,
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 10,
+                                    font: { size: 11 }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: city,
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' μg/m³';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day',
+                                    displayFormats: { 
+                                        day: 'MMM dd'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: '{% if current_lang == "id" %}Tanggal{% else %}Date{% endif %}',
+                                    font: { size: 11 }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'PM2.5 (μg/m³)',
+                                    font: { size: 11 }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading historical:', error));
+    }
+    
+    // Forecast Chart (Next 24 hours)
+    function loadForecastChart(city) {
+        fetch(`/api/trend-forecast/${city}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Forecast data received');
+                
+                if (forecastChart) {
+                    forecastChart.destroy();
+                }
+                
+                const ctx = document.getElementById('forecastChart').getContext('2d');
+                
+                // Convert timestamps to Date objects for Chart.js
+                const forecastData = data.forecast_pm25.map((val, idx) => ({
+                    x: new Date(data.forecast_timestamps[idx]),
+                    y: val
+                }));
+                
+                const whoData = data.forecast_pm25.map((val, idx) => ({
+                    x: new Date(data.forecast_timestamps[idx]),
+                    y: 15
+                }));
+                
+                console.log('Forecast data points:', forecastData.length);
+                
+                forecastChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: '{% if current_lang == "id" %}Prediksi ML{% else %}ML Prediction{% endif %}',
+                                data: forecastData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 3,
+                                pointHoverRadius: 6,
+                                pointStyle: 'circle',
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'WHO Standard',
+                                data: whoData,
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 10,
+                                    font: { size: 11 }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: city,
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' μg/m³';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'hour',
+                                    displayFormats: { hour: 'HH:mm' }
+                                },
+                                title: {
+                                    display: true,
+                                    text: '{% if current_lang == "id" %}Waktu (24 Jam Kedepan){% else %}Time (Next 24 Hours){% endif %}',
+                                    font: { size: 11 }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'PM2.5 (μg/m³)',
+                                    font: { size: 11 }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading forecast:', error));
+    }
+
+    function loadCityComparisonData() {
+        fetch('/api/city-comparison')
+            .then(response => response.json())
+            .then(data => {
+                const colors = data.pm25_avg.map(value => {
+                    if (value <= 15) return '#00e400';
+                    if (value <= 35) return '#ffff00';
+                    if (value <= 55) return '#ff7e00';
+                    if (value <= 150) return '#ff0000';
+                    return '#8f3f97';
+                });
+
+                const ctx = document.getElementById('cityComparisonChart').getContext('2d');
+                cityComparisonChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.cities,
+                        datasets: [{
+                            label: 'Average PM2.5 (μg/m³)',
+                            data: data.pm25_avg,
+                            backgroundColor: colors,
+                            borderColor: colors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Average PM2.5 Concentration by City'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'PM2.5 (μg/m³)'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Add WHO standard line
+                const whoPlugin = {
+                    id: 'whoLine',
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        const yAxis = chart.scales.y;
+                        const whoValue = yAxis.getPixelForValue(data.who_standard);
+                        
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.setLineDash([5, 5]);
+                        ctx.strokeStyle = '#e74c3c';
+                        ctx.lineWidth = 2;
+                        ctx.moveTo(chart.chartArea.left, whoValue);
+                        ctx.lineTo(chart.chartArea.right, whoValue);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                };
+                
+                cityComparisonChart.options.plugins.push(whoPlugin);
+                cityComparisonChart.update();
+            })
+            .catch(error => {
+                console.error('Error loading city comparison data:', error);
+            });
+    }
+</script>
+{% endblock %}

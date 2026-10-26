@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: air-quality-app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./static:/app/static
+    restart: unless-stopped
+    networks:
+      - air-quality-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/stats')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PostgreSQL database
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: air-quality-db
+  #   environment:
+  #     POSTGRES_DB: air_quality
+  #     POSTGRES_USER: air_quality_user
+  #     POSTGRES_PASSWORD: your_password_here
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - air-quality-network
+  #   restart: unless-stopped
+
+  # Optional: Redis for caching
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: air-quality-redis
+  #   networks:
+  #     - air-quality-network
+  #   restart: unless-stopped
+
+networks:
+  air-quality-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:
