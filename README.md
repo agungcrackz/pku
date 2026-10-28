@@ -5,7 +5,7 @@
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13.0-orange.svg)](https://www.tensorflow.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Sistem pemantauan dan prediksi kualitas udara berbasis web untuk **87 kota di 38 provinsi Indonesia** menggunakan Machine Learning dan standar WHO.
+Sistem pemantauan dan prediksi kualitas udara berbasis web untuk **88 kota di 38 provinsi Indonesia** menggunakan Machine Learning dan standar WHO.
 
 ![Air Quality Dashboard](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest%20%7C%20Gradient%20Boosting%20%7C%20LSTM-blue)
@@ -14,13 +14,13 @@ Sistem pemantauan dan prediksi kualitas udara berbasis web untuk **87 kota di 38
 ## ✨ Fitur Utama
 
 - 🤖 **Machine Learning Models**: Random Forest, Gradient Boosting, dan LSTM Neural Network untuk prediksi akurat
-- 🗺️ **Peta Interaktif**: Visualisasi real-time 87 kota di 38 provinsi
+- 🗺️ **Peta Interaktif**: Visualisasi real-time 88 kota di 38 provinsi
   - **Marker Clustering**: Pengelompokan otomatis untuk performa optimal
   - **Spatial Heatmap**: Interpolasi prediksi di area antar kota
   - **Layer Control**: Toggle antara point markers & heatmap
 - 🎯 **Standar WHO**: Compliance tracking otomatis terhadap WHO Air Quality Guidelines
 - 📊 **Dashboard Komprehensif**: 
-  - Statistik real-time (87 kota, avg PM2.5, WHO compliance)
+  - Statistik real-time (88 kota, avg PM2.5, WHO compliance)
   - Pagination table (10 kota/page untuk UX optimal)
   - Bar chart & pie chart dengan color-coding
 - 📈 **Time Series Analysis**: 
@@ -138,7 +138,7 @@ python app.py
 ## 📊 Dataset & Coverage
 
 ### Geographic Coverage
-**Total: 87 Kota | 38 Provinsi | 180,576 Data Points**
+**Total: 88 Kota | 38 Provinsi | 180,576+ Data Points**
 
 - 🗺️ **Sumatera**: 10 provinsi, 20 kota
 - 🏙️ **Jawa**: 6 provinsi, 34 kota (Jakarta, Bandung, Surabaya, dll)

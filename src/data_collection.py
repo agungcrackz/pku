@@ -18,12 +18,13 @@ class AirQualityDataCollector:
         self.iqair_api_key = os.getenv('IQAIR_API_KEY', '')
         
         # Koordinat kota-kota per provinsi (38 provinsi, max 10 kota untuk provinsi besar)
-        # Total: 87 kota untuk coverage optimal nasional 100%
+        # Total: 88 kota untuk coverage optimal nasional 100%
         self.cities = {
             # ============ SUMATERA (10 provinsi) ============
             # 1. ACEH
             'Banda Aceh': {'lat': 5.5483, 'lon': 95.3238},
             'Lhokseumawe': {'lat': 5.1801, 'lon': 97.1507},
+            'Sabang': {'lat': 5.8933, 'lon': 95.3214},
             
             # 2. SUMATERA UTARA
             'Medan': {'lat': 3.5952, 'lon': 98.6722},
