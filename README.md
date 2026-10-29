@@ -9,7 +9,7 @@ Sistem pemantauan dan prediksi kualitas udara berbasis web untuk **88 kota di 38
 
 ![Air Quality Dashboard](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest%20%7C%20Gradient%20Boosting%20%7C%20LSTM-blue)
-![Coverage](https://img.shields.io/badge/Coverage-87%20Cities%20%7C%2038%20Provinces-success)
+![Coverage](https://img.shields.io/badge/Coverage-88%20Cities%20%7C%2038%20Provinces-success)
 
 ## ✨ Fitur Utama
 
@@ -223,10 +223,10 @@ Kontribusi sangat diterima! Berikut cara berkontribusi:
 
 ## 📝 Changelog
 
-### Version 1.0.0 (2024)
+### Version 1.0.0 (2026)
 - ✅ Initial release
 - ✅ 3 ML models (RF, GB, LSTM)
-- ✅ 87 cities coverage across 38 provinces
+- ✅ 88 cities coverage across 38 provinces
 - ✅ Interactive dashboard with pagination
 - ✅ WHO compliance tracking
 - ✅ Interactive map with marker clustering and heatmap
@@ -243,7 +243,7 @@ Kontribusi sangat diterima! Berikut cara berkontribusi:
 ## 🔮 Roadmap
 
 ### ✅ Completed
-- [x] Expand to 87 cities across 38 provinces
+- [x] Expand to 88 cities across 38 provinces
 - [x] Add spatial prediction heatmap
 - [x] Implement marker clustering  
 - [x] Multi-language support (Indonesian & English)

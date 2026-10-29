@@ -437,13 +437,20 @@
         categories[c.category] = (categories[c.category] || 0) + 1;
     });
 
-    // Define color mapping for each category
+    // Define color mapping for each category (bilingual support)
     var categoryColors = {
+        // Indonesian
         'Baik': '#00e400',              // Green
         'Sedang': '#ffff00',            // Yellow
         'Tidak Sehat': '#ff7e00',       // Orange
         'Sangat Tidak Sehat': '#ff0000', // Red
-        'Berbahaya': '#8f3f97'          // Purple
+        'Berbahaya': '#8f3f97',         // Purple
+        // English
+        'Good': '#00e400',              // Green
+        'Moderate': '#ffff00',          // Yellow
+        'Unhealthy': '#ff7e00',         // Orange
+        'Very Unhealthy': '#ff0000',    // Red
+        'Hazardous': '#8f3f97'          // Purple
     };
 
     // Build labels, data, and colors in correct order
