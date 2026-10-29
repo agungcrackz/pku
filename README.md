@@ -41,32 +41,80 @@ Sistem pemantauan dan prediksi kualitas udara berbasis web untuk **88 kota di 38
 - **CO**: Carbon Monoxide (≤4 mg/m³ 24-hour mean)
 - **O3**: Ozone (≤100 μg/m³ 8-hour mean)
 
-## Struktur Proyek
+## 📁 Struktur Proyek
 
 ```
-├── data/                   # Data kualitas udara
-├── models/                 # Model ML yang sudah di-train
-├── src/
-│   ├── data_collection.py  # Pengumpulan data
-│   ├── preprocessing.py    # Preprocessing data
-│   ├── model_training.py   # Training model ML
-│   ├── prediction.py       # Prediksi kualitas udara
-│   └── visualization.py    # Visualisasi dan pemetaan
-├── notebooks/              # Jupyter notebooks untuk eksplorasi
-├── static/                 # File statis untuk web
-├── templates/              # Template HTML
-├── app.py                  # Flask web application
-└── requirements.txt        # Dependencies
-
+pku/
+├── data/                       # Data kualitas udara (CSV)
+│   ├── air_quality_data.csv    # Dataset utama (180K+ records)
+│   ├── train_data.csv          # Training set
+│   ├── val_data.csv            # Validation set
+│   └── test_data.csv           # Test set
+│
+├── models/                     # Model ML yang sudah di-training
+│   ├── random_forest_model.pkl       # Random Forest (16MB)
+│   ├── gradient_boosting_model.pkl   # Gradient Boosting (448KB)
+│   ├── lstm_model.h5                 # LSTM Neural Network (624KB)
+│   ├── preprocessor.pkl              # Data preprocessor (4KB)
+│   ├── model_metrics.json            # Performance metrics
+│   └── lstm_training_history.png     # Training visualization
+│
+├── models_backup/              # Backup model files
+│
+├── src/                        # Source code modules
+│   ├── data_collection.py      # OpenWeatherMap API integration
+│   ├── preprocessing.py        # Data cleaning & feature engineering
+│   ├── model_training.py       # ML model training pipeline
+│   ├── prediction.py           # Prediction & inference logic
+│   └── visualization.py        # Map & chart generation
+│
+├── templates/                  # HTML templates (Jinja2)
+│   ├── base.html               # Base template dengan navbar/footer
+│   ├── index.html              # Homepage
+│   ├── dashboard.html          # Main dashboard
+│   ├── map.html                # Interactive map
+│   ├── predict.html            # Prediction form
+│   ├── predict_result.html     # Prediction results
+│   ├── visualizations.html     # Time-series charts
+│   ├── about.html              # About page
+│   └── error.html              # Error page
+│
+├── static/                     # Static assets
+│   ├── css/                    # Custom stylesheets (currently empty)
+│   └── js/                     # Custom JavaScript (currently empty)
+│
+├── app.py                      # Flask web application (main entry point)
+├── translations.py             # Multi-language support (ID/EN)
+├── requirements.txt            # Python dependencies
+├── .env.example                # Environment variables template
+├── .gitignore                  # Git ignore rules
+├── Makefile                    # Build automation commands
+├── Dockerfile                  # Docker container configuration
+├── docker-compose.yml          # Docker Compose orchestration
+├── LICENSE                     # MIT License
+└── README.md                   # Project documentation (this file)
 ```
+
+**Key Files:**
+- **app.py** (393 lines) - Flask routes, API endpoints, error handling
+- **src/model_training.py** - Model training & evaluation pipeline
+- **src/prediction.py** - Real-time prediction engine
+- **templates/dashboard.html** - Main dashboard with charts & tables
+- **templates/map.html** - Interactive Leaflet map with clustering & heatmap
 
 ## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.12 atau lebih tinggi
+- pip (Python package installer)
+- Git (untuk clone repository)
+- 4GB+ RAM (untuk training LSTM)
 
 ### Installation
 
 ```bash
 # 1. Clone repository
-git clone <repository-url>
+git clone https://github.com/agungcrackz/pku.git
 cd pku
 
 # 2. Create virtual environment
@@ -79,13 +127,22 @@ pip install -r requirements.txt
 
 # 4. Set up environment variables
 cp .env.example .env
-# Edit .env dan tambahkan OPENWEATHER_API_KEY
+# Edit .env dan tambahkan OPENWEATHER_API_KEY Anda
+# Dapatkan FREE API key di: https://openweathermap.org/api
 
 # 5. Run application
 python app.py
 ```
 
-Buka browser: **http://localhost:5000**
+**Buka browser:** http://localhost:5000
+
+### Makefile Commands (Linux/Mac)
+
+```bash
+make install    # Install dependencies
+make run        # Run Flask app
+make clean      # Clean cache files
+```
 
 ### Docker (Optional)
 
@@ -94,18 +151,21 @@ Buka browser: **http://localhost:5000**
 docker build -t air-quality-indonesia .
 
 # Run container
-docker run -p 5000:5000 air-quality-indonesia
+docker run -p 5000:5000 \
+  -e OPENWEATHER_API_KEY=your_api_key_here \
+  air-quality-indonesia
+
+# Access: http://localhost:5000
 ```
 
-### Development
+### Docker Compose (Recommended)
 
 ```bash
-# Run with auto-reload
-export FLASK_ENV=development
-python app.py
+# Edit docker-compose.yml untuk set API key
+docker-compose up -d
 
-# Access monitoring dashboard
-# Open http://localhost:5000
+# Stop container
+docker-compose down
 ```
 
 ## 🏗️ Arsitektur Sistem
@@ -207,9 +267,44 @@ Sistem menggunakan data dari:
 
 **Overall Classification Accuracy: 90.7%**
 
-## 📖 Dokumentasi
+## 📖 Dokumentasi & Resources
 
-- **README.md** (file ini) - Overview & quick start
+### Documentation Files
+- **README.md** (file ini) - Overview, installation & quick start guide
+- **.env.example** - Template environment variables
+- **LICENSE** - MIT License details
+- **Makefile** - Build automation commands
+
+### API Endpoints
+
+```bash
+# Get all cities data
+GET http://localhost:5000/api/cities
+
+# Get specific city data
+GET http://localhost:5000/api/city/<city_name>
+
+# Get prediction for specific city
+GET http://localhost:5000/api/predict/<city_name>
+
+# Health check
+GET http://localhost:5000/api/health
+```
+
+### Web Pages
+- **/** - Homepage & introduction
+- **/dashboard** - Main dashboard dengan statistik & charts
+- **/map** - Interactive map dengan clustering & heatmap
+- **/predict** - Manual prediction form
+- **/visualizations** - Time-series analysis & forecasting
+- **/about** - About system & team info
+
+### External Resources
+- [OpenWeatherMap API Docs](https://openweathermap.org/api/air-pollution)
+- [WHO Air Quality Guidelines](https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health)
+- [Scikit-learn Documentation](https://scikit-learn.org/stable/)
+- [TensorFlow Keras Guide](https://www.tensorflow.org/guide/keras)
+- [Flask Documentation](https://flask.palletsprojects.com/)
 
 ## 🤝 Kontribusi
 
@@ -234,11 +329,31 @@ Kontribusi sangat diterima! Berikut cara berkontribusi:
 - ✅ REST API endpoints
 - ✅ Complete documentation
 
-## 🐛 Known Issues
+## 🐛 Known Issues & Troubleshooting
 
-- LSTM training requires significant memory (>4GB RAM)
-- Real-time API data requires API keys
-- Large datasets may cause slow visualization loading
+### Common Issues
+
+**1. LSTM Model Error: "Could not deserialize 'keras.metrics.mse'"**
+- **Cause**: TensorFlow version mismatch
+- **Solution**: Model akan auto-skip, Random Forest & Gradient Boosting tetap berfungsi normal
+
+**2. Module Not Found Error**
+- **Cause**: Dependencies belum terinstall
+- **Solution**: Pastikan virtual environment aktif, jalankan `pip install -r requirements.txt`
+
+**3. Port 5000 Already in Use**
+- **Cause**: Port sudah dipakai aplikasi lain
+- **Solution**: Edit `app.py` ganti port, atau stop aplikasi yang pakai port 5000
+
+**4. API Key Error**
+- **Cause**: OPENWEATHER_API_KEY tidak diset atau invalid
+- **Solution**: Cek file `.env`, pastikan API key valid dari OpenWeatherMap
+
+### System Requirements
+- **RAM**: Minimum 4GB (8GB recommended untuk LSTM)
+- **Storage**: 500MB free space
+- **OS**: Linux, macOS, Windows 10/11
+- **Browser**: Chrome/Firefox/Edge (latest version)
 
 ## 🔮 Roadmap
 
