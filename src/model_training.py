@@ -146,16 +146,17 @@ class AirQualityModelTrainer:
             layers.Dense(1)
         ])
         
+        # Learning rate diturunkan untuk stabilitas training
         model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=0.001),
+            optimizer=keras.optimizers.Adam(learning_rate=0.0001),
             loss='mse',
             metrics=['mae']
         )
         
         return model
     
-    def train_lstm(self, X_train, y_train, X_val, y_val, epochs=50, batch_size=32):
-        """Train LSTM model"""
+    def train_lstm(self, X_train, y_train, X_val, y_val, epochs=50, batch_size=64):
+        """Train LSTM model dengan batch size lebih besar untuk stabilitas"""
         print("\nPreparing LSTM data...")
         
         # Convert to numpy arrays
@@ -177,18 +178,20 @@ class AirQualityModelTrainer:
         
         print("\nTraining LSTM...")
         
-        # Callbacks
+        # Callbacks untuk stabilitas training
         early_stopping = keras.callbacks.EarlyStopping(
             monitor='val_loss',
-            patience=10,
-            restore_best_weights=True
+            patience=15,  # Patience dinaikkan untuk learning rate lebih rendah
+            restore_best_weights=True,
+            verbose=1
         )
         
         reduce_lr = keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.5,
-            patience=5,
-            min_lr=0.00001
+            patience=7,  # Patience dinaikkan
+            min_lr=0.00001,
+            verbose=1
         )
         
         # Train
@@ -357,8 +360,8 @@ def main():
     # Train Gradient Boosting
     trainer.train_gradient_boosting(X_train, y_train, X_val, y_val)
     
-    # Train LSTM
-    trainer.train_lstm(X_train, y_train, X_val, y_val, epochs=50, batch_size=32)
+    # Train LSTM dengan parameter yang sudah dioptimalkan
+    trainer.train_lstm(X_train, y_train, X_val, y_val, epochs=50, batch_size=64)
     
     # Evaluate on test set
     trainer.evaluate_on_test(X_test, y_test)

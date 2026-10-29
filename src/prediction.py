@@ -43,7 +43,26 @@ class AirQualityPredictor:
             print(f"✗ Could not load Gradient Boosting: {e}")
         
         try:
-            self.lstm_model = keras.models.load_model('models/lstm_model.h5')
+            # Try loading LSTM with custom objects for backward compatibility
+            from tensorflow.keras import metrics
+            custom_objects = {
+                'mse': metrics.MeanSquaredError(),
+                'mae': metrics.MeanAbsoluteError()
+            }
+            try:
+                self.lstm_model = keras.models.load_model('models/lstm_model.h5', 
+                                                         custom_objects=custom_objects,
+                                                         compile=False)
+            except:
+                # Fallback: load without compilation
+                self.lstm_model = keras.models.load_model('models/lstm_model.h5', compile=False)
+            
+            # Recompile model
+            self.lstm_model.compile(
+                optimizer='adam',
+                loss='mse',
+                metrics=['mae']
+            )
             print("✓ LSTM model loaded")
         except Exception as e:
             print(f"✗ Could not load LSTM: {e}")
