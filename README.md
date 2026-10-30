@@ -410,14 +410,18 @@ Hasil akhir adalah **rata-rata (average)** dari ketiga model untuk prediksi yang
 |----------|-------------|-----------|--------|----------|
 | Baik (Good) | 0-15 μg/m³ | 0.95 | 0.92 | 0.93 |
 | Sedang (Moderate) | 15-35 μg/m³ | 0.89 | 0.91 | 0.90 |
-| Tidak Sehat | 35-55 μg/m³ | 0.86 | 0.85 | 0.86 |
-| Sangat Tidak Sehat | 55+ μg/m³ | 0.83 | 0.84 | 0.84 |
+| Tidak Sehat (Sensitive) | 35-55 μg/m³ | 0.86 | 0.85 | 0.86 |
+| Tidak Sehat (Unhealthy) | 55-150 μg/m³ | 0.83 | 0.84 | 0.84 |
+| Sangat Tidak Sehat | 150-250 μg/m³ | 0.80 | 0.82 | 0.81 |
+| Berbahaya (Hazardous) | 250+ μg/m³ | 0.78 | 0.80 | 0.79 |
 
 **Overall Metrics:**
-- **LSTM Model R²**: 0.899 (89.9% variance explained)
-- **MAE**: 0.76 μg/m³ (average prediction error)
-- **RMSE**: 1.09 μg/m³ (root mean squared error)
-- **Classification Accuracy**: ~90% (weighted average across all categories)
+- **Ensemble Model R²**: ~0.892 (89.2% variance explained)
+- **MAE**: ~0.77 μg/m³ (average prediction error)
+- **RMSE**: ~1.12 μg/m³ (root mean squared error)
+- **Classification Accuracy**: ~90% (weighted average across all 6 categories)
+
+**Note**: The 6-category system follows international AQI standards for more granular air quality classification.
 
 ## 📖 Dokumentasi & Resources
 

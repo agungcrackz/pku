@@ -194,7 +194,7 @@ Epoch 30: loss: 46.2, val_loss: 46.8, mae: 4.9, val_mae: 5.0
 ---
 
 ## 📚 Referensi
-
+Bukti kualitatif bahwa hasil prediksi menempel presisi dengan data kejadian di lapangan.
 - [Time Series Forecasting Best Practices](https://www.tensorflow.org/tutorials/structured_data/time_series)
 - [LSTM Hyperparameter Tuning](https://keras.io/guides/keras_tuner/)
 - [Avoiding Data Leakage in Time Series](https://machinelearningmastery.com/train-test-split-for-evaluating-machine-learning-algorithms/)

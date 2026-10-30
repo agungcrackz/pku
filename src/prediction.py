@@ -130,7 +130,7 @@ class AirQualityPredictor:
         return predictions
     
     def classify_air_quality(self, pm25_value):
-        """Klasifikasi kualitas udara berdasarkan PM2.5"""
+        """Klasifikasi kualitas udara berdasarkan PM2.5 (6 kategori)"""
         if pm25_value <= 15:
             return {
                 'status': 'Good',
@@ -159,16 +159,23 @@ class AirQualityPredictor:
                 'description': 'Semua orang mungkin mulai mengalami efek kesehatan',
                 'who_compliant': False
             }
-        else:
+        elif pm25_value <= 250:
             return {
                 'status': 'Very Unhealthy',
                 'color': '#8f3f97',
                 'description': 'Peringatan kesehatan: semua orang dapat mengalami efek kesehatan serius',
                 'who_compliant': False
             }
+        else:
+            return {
+                'status': 'Hazardous',
+                'color': '#7e0023',
+                'description': 'Darurat kesehatan: seluruh populasi berisiko tinggi',
+                'who_compliant': False
+            }
     
     def get_recommendations(self, air_quality_status):
-        """Dapatkan rekomendasi berdasarkan status kualitas udara"""
+        """Dapatkan rekomendasi berdasarkan status kualitas udara (6 kategori)"""
         recommendations = {
             'Good': [
                 'Nikmati aktivitas outdoor',
@@ -196,6 +203,13 @@ class AirQualityPredictor:
                 'Gunakan air purifier',
                 'Hindari semua aktivitas outdoor',
                 'Kelompok berisiko sebaiknya konsultasi dokter'
+            ],
+            'Hazardous': [
+                'DARURAT: Tetap di dalam ruangan dengan jendela tertutup',
+                'Gunakan masker N95 bahkan di dalam ruangan jika ventilasi buruk',
+                'Evakuasi ke area lebih aman jika memungkinkan',
+                'Segera konsultasi dokter jika mengalami gejala pernapasan',
+                'Hindari semua aktivitas fisik'
             ]
         }
         
