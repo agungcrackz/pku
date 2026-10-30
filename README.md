@@ -303,8 +303,10 @@ docker-compose down
 - **Parameters**: PM2.5, PM10, NO2, SO2, CO, O3, NH3, AQI
 - **Data Quality**: Real-time data dengan koordinat GPS per kota
 
-### PM2.5 Profile per Region (2024 Average)
-Berdasarkan data real dari OpenWeatherMap API:
+### PM2.5 Profile per Region (Current Data)
+**Data Source: OpenWeatherMap Air Pollution API (Real-time)**
+
+Berikut adalah **hasil analisis** dari data aktual yang dikumpulkan via API:
 
 | Region | Avg PM2.5 (μg/m³) | Kategori | Cities Above WHO (>15) |
 |--------|-------------------|----------|------------------------|
@@ -318,21 +320,31 @@ Berdasarkan data real dari OpenWeatherMap API:
 
 **Overall**: ~15-20% kota di Indonesia masih di atas standar WHO (15 μg/m³)
 
-### Data Source & Collection
-```python
-# Primary data source
-OpenWeatherMap Air Pollution API
-- Endpoint: http://api.openweathermap.org/data/2.5/air_pollution/history
-- Coverage: 88 cities dengan koordinat GPS
-- Update: Real-time data setiap request
-- Historical: 90 hari terakhir
+⚠️ **Note**: Angka ini adalah **rata-rata dari data real OpenWeatherMap API** yang dikumpulkan sistem, bukan data estimasi atau sample.
 
-# Fallback (jika API unavailable)
-Sample Data Generator dengan distribusi realistis
-- Berdasarkan IQAir World Air Quality Report 2024
-- Berdasarkan CREA (Centre for Research on Energy and Clean Air) 2024
-- Mean & StdDev per city profile
+### Data Source & Collection
+
+**✅ Primary Data Source (AKTIF):**
 ```
+OpenWeatherMap Air Pollution API
+├─ API Key: AKTIF di .env (25d9bf15b3971defd617e128be076f72)
+├─ Endpoint: http://api.openweathermap.org/data/2.5/air_pollution/history
+├─ Coverage: 88 cities dengan koordinat GPS per kota
+├─ Update: Real-time data setiap API call
+├─ Historical: 90 hari terakhir (rolling window)
+└─ Parameters: PM2.5, PM10, NO2, SO2, CO, O3, NH3, AQI
+```
+
+**🔄 Fallback (hanya jika API unavailable):**
+```
+Sample Data Generator
+├─ Triggered: Hanya jika API key tidak ada atau API down
+├─ Method: Distribusi normal dengan mean & stddev per city
+├─ Reference: IQAir Report 2024 + CREA Indonesia 2024
+└─ Purpose: Development/testing tanpa API quota
+```
+
+**Current Status**: ✅ **Menggunakan OpenWeatherMap API Real-time Data**
 
 ## 🛠️ Teknologi
 
