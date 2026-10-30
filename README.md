@@ -327,7 +327,7 @@ Berikut adalah **hasil analisis** dari data aktual yang dikumpulkan via API:
 **✅ Primary Data Source (AKTIF):**
 ```
 OpenWeatherMap Air Pollution API
-├─ API Key: AKTIF di .env (25d9bf15b3971defd617e128be076f72)
+├─ API Key: Configured in .env file (NOT tracked in git)
 ├─ Endpoint: http://api.openweathermap.org/data/2.5/air_pollution/history
 ├─ Coverage: 88 cities dengan koordinat GPS per kota
 ├─ Update: Real-time data setiap API call
