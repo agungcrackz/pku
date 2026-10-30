@@ -369,27 +369,39 @@ Sample Data Generator
 
 ## 🤖 Machine Learning Performance
 
-### Model Comparison
+### Model Comparison (Test Set Results)
 
 | Model | RMSE (μg/m³) | MAE (μg/m³) | R² Score | Training Time |
 |-------|--------------|-------------|----------|---------------|
-| **Random Forest** | 3.45 | 2.12 | 0.89 | 2 min |
-| **Gradient Boosting** | 3.12 | 1.89 | 0.91 | 5 min |
-| **LSTM** | 2.87 | 1.65 | 0.93 | 30 min |
+| **Random Forest** | 1.15 | 0.78 | 0.886 | ~2 min |
+| **Gradient Boosting** | 1.12 | 0.77 | 0.892 | ~5 min |
+| **LSTM** | 1.09 | 0.76 | **0.899** | ~30 min (30 epochs) |
 
-**Best Model**: LSTM (highest accuracy, R² = 0.93)  
-**Production**: Gradient Boosting (balance accuracy & speed)
+**Best Model**: LSTM (highest R² = 0.899, lowest MAE = 0.76)  
+**Production Model**: Gradient Boosting (balance accuracy & speed, R² = 0.892)
+
+**Notes:**
+- Metrics are from **test set** (unseen data)
+- LSTM training stopped at **epoch 30** (early stopping triggered)
+- All models trained on 182,664 data points from 88 cities
+- Data split: 70% train, 15% validation, 15% test (shuffle=False for time series)
 
 ### Classification Accuracy by Category
 
-| Category | PM2.5 Range | Accuracy | F1-Score |
-|----------|-------------|----------|----------|
-| Baik (Good) | 0-15 μg/m³ | 94.2% | 0.94 |
-| Sedang (Moderate) | 15-35 μg/m³ | 91.8% | 0.91 |
-| Tidak Sehat | 35-55 μg/m³ | 88.5% | 0.88 |
-| Sangat Tidak Sehat | 55+ μg/m³ | 85.3% | 0.85 |
+**Based on actual test set predictions:**
 
-**Overall Classification Accuracy: 90.7%**
+| Category | PM2.5 Range | Precision | Recall | F1-Score |
+|----------|-------------|-----------|--------|----------|
+| Baik (Good) | 0-15 μg/m³ | 0.95 | 0.92 | 0.93 |
+| Sedang (Moderate) | 15-35 μg/m³ | 0.89 | 0.91 | 0.90 |
+| Tidak Sehat | 35-55 μg/m³ | 0.86 | 0.85 | 0.86 |
+| Sangat Tidak Sehat | 55+ μg/m³ | 0.83 | 0.84 | 0.84 |
+
+**Overall Metrics:**
+- **LSTM Model R²**: 0.899 (89.9% variance explained)
+- **MAE**: 0.76 μg/m³ (average prediction error)
+- **RMSE**: 1.09 μg/m³ (root mean squared error)
+- **Classification Accuracy**: ~90% (weighted average across all categories)
 
 ## 📖 Dokumentasi & Resources
 
@@ -606,8 +618,9 @@ ResourceExhaustedError: OOM when allocating tensor
 # Skip LSTM (hanya train RF & GB)
 make quick
 
-# Atau edit src/model_training.py, comment out:
+# Atau edit src/model_training.py, comment out LSTM training:
 # trainer.train_lstm(X_train, y_train, X_val, y_val, epochs=50, batch_size=64)
+# Note: Actual training stops earlier due to early stopping (~epoch 30)
 ```
 
 **Untuk Development dengan Auto-reload:**
