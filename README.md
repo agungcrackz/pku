@@ -412,7 +412,7 @@ Hasil akhir adalah **rata-rata (average)** dari ketiga model untuk prediksi yang
 | Sedang (Moderate) | 15-35 μg/m³ | 0.89 | 0.91 | 0.90 |
 | Tidak Sehat (Sensitive) | 35-55 μg/m³ | 0.86 | 0.85 | 0.86 |
 | Tidak Sehat (Unhealthy) | 55-150 μg/m³ | 0.83 | 0.84 | 0.84 |
-| Sangat Tidak Sehat | 150-250 μg/m³ | 0.80 | 0.82 | 0.81 |
+| Sangat Tidak Sehat (Very Unhealthy) | 150-250 μg/m³ | 0.80 | 0.82 | 0.81 |
 | Berbahaya (Hazardous) | 250+ μg/m³ | 0.78 | 0.80 | 0.79 |
 
 **Overall Metrics:**
