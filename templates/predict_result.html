@@ -89,6 +89,29 @@
         {% if current_lang == 'id' %}Hasil Prediksi{% else %}Prediction Results{% endif %}: {{ city }}
     </h2>
     
+    <!-- Ensemble Badge -->
+    <div class="alert alert-info border-0 mb-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-left: 5px solid #667eea !important;">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-robot fa-2x text-primary-custom me-3"></i>
+            <div>
+                <strong class="text-primary-custom">
+                    {% if current_lang == 'id' %}
+                    🤖 Prediksi Menggunakan Metode Ensemble
+                    {% else %}
+                    🤖 Prediction Using Ensemble Method
+                    {% endif %}
+                </strong>
+                <p class="mb-0 small mt-1">
+                    {% if current_lang == 'id' %}
+                    Hasil prediksi adalah rata-rata dari 3 model: Random Forest, Gradient Boosting, dan LSTM Neural Network
+                    {% else %}
+                    Prediction result is the average of 3 models: Random Forest, Gradient Boosting, and LSTM Neural Network
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Main Result -->
     <div class="row mb-4">
         <div class="col-12">

@@ -87,13 +87,29 @@ class AirQualityPredictor:
         predictions = []
         
         if self.rf_model:
-            predictions.append(self.rf_model.predict(features)[0])
+            rf_pred = self.rf_model.predict(features)[0]
+            predictions.append(rf_pred)
+            print(f"  RF prediction: {rf_pred:.2f}")
         
         if self.gb_model:
-            predictions.append(self.gb_model.predict(features)[0])
+            gb_pred = self.gb_model.predict(features)[0]
+            predictions.append(gb_pred)
+            print(f"  GB prediction: {gb_pred:.2f}")
+        
+        if self.lstm_model:
+            try:
+                # LSTM expects 3D input (samples, timesteps, features)
+                lstm_features = np.array(features).reshape((1, 1, features.shape[1]))
+                lstm_pred = self.lstm_model.predict(lstm_features, verbose=0)[0][0]
+                predictions.append(lstm_pred)
+                print(f"  LSTM prediction: {lstm_pred:.2f}")
+            except Exception as e:
+                print(f"  LSTM prediction failed: {e}")
         
         if len(predictions) > 0:
-            return np.mean(predictions)
+            ensemble_pred = np.mean(predictions)
+            print(f"  → Ensemble (avg): {ensemble_pred:.2f}")
+            return ensemble_pred
         else:
             raise ValueError("No models available for prediction")
     
@@ -186,7 +202,7 @@ class AirQualityPredictor:
         return recommendations.get(air_quality_status, [])
     
     def predict_and_classify(self, features, model_type='random_forest'):
-        """Prediksi dan klasifikasi sekaligus"""
+        """Prediksi dan klasifikasi sekaligus (single model)"""
         prediction = self.predict_single(features, model_type)
         classification = self.classify_air_quality(prediction)
         recommendations = self.get_recommendations(classification['status'])
@@ -196,7 +212,27 @@ class AirQualityPredictor:
             'air_quality': classification,
             'recommendations': recommendations,
             'who_standard': self.who_standards['pm2_5'],
-            'who_ratio': float(prediction / self.who_standards['pm2_5'])
+            'who_ratio': float(prediction / self.who_standards['pm2_5']),
+            'model_used': model_type
+        }
+        
+        return result
+    
+    def predict_ensemble_and_classify(self, features):
+        """Prediksi menggunakan Ensemble dan klasifikasi sekaligus"""
+        print("\n🤖 Running Ensemble Prediction (RF + GB + LSTM):")
+        prediction = self.predict_ensemble(features)
+        classification = self.classify_air_quality(prediction)
+        recommendations = self.get_recommendations(classification['status'])
+        
+        result = {
+            'pm25_predicted': float(prediction),
+            'air_quality': classification,
+            'recommendations': recommendations,
+            'who_standard': self.who_standards['pm2_5'],
+            'who_ratio': float(prediction / self.who_standards['pm2_5']),
+            'model_used': 'ensemble',
+            'ensemble_info': 'Average of Random Forest, Gradient Boosting, and LSTM predictions'
         }
         
         return result

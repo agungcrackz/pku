@@ -227,19 +227,35 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-2">
-                        <span class="badge" style="background-color: #00e400;">{{ t.good }} (0-15)</span>
+                        <span class="badge" style="background-color: #00e400; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-smile"></i> {{ t.good }} (0-15 μg/m³)
+                        </span>
                     </div>
                     <div class="mb-2">
-                        <span class="badge" style="background-color: #ffff00; color: black;">{{ t.moderate }} (15-35)</span>
+                        <span class="badge" style="background-color: #ffff00; color: black; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-meh"></i> {{ t.moderate }} (15-35 μg/m³)
+                        </span>
                     </div>
                     <div class="mb-2">
-                        <span class="badge" style="background-color: #ff7e00;">{{ t.unhealthy_sensitive }} (35-55)</span>
+                        <span class="badge" style="background-color: #ff7e00; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-frown"></i> {{ t.unhealthy_sensitive }} (35-55 μg/m³)
+                        </span>
                     </div>
                     <div class="mb-2">
-                        <span class="badge" style="background-color: #ff0000;">{{ t.unhealthy }} (55-150)</span>
+                        <span class="badge" style="background-color: #ff0000; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-exclamation-triangle"></i> {{ t.unhealthy }} (55-150 μg/m³)
+                        </span>
                     </div>
                     <div class="mb-2">
-                        <span class="badge" style="background-color: #8f3f97;">{{ t.very_unhealthy }} (150+)</span>
+                        <span class="badge" style="background-color: #8f3f97; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-dizzy"></i> {{ t.very_unhealthy }} (150-250 μg/m³)
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #7e0023; font-size: 13px; padding: 8px 12px;">
+                            <i class="fas fa-skull-crossbones"></i> 
+                            {% if current_lang == 'id' %}Berbahaya{% else %}Hazardous{% endif %} (250+ μg/m³)
+                        </span>
                     </div>
                 </div>
             </div>
@@ -561,11 +577,12 @@
             .then(response => response.json())
             .then(data => {
                 const colors = data.pm25_avg.map(value => {
-                    if (value <= 15) return '#00e400';
-                    if (value <= 35) return '#ffff00';
-                    if (value <= 55) return '#ff7e00';
-                    if (value <= 150) return '#ff0000';
-                    return '#8f3f97';
+                    if (value <= 15) return '#00e400';      // Good
+                    if (value <= 35) return '#ffff00';      // Moderate
+                    if (value <= 55) return '#ff7e00';      // Unhealthy Sensitive
+                    if (value <= 150) return '#ff0000';     // Unhealthy
+                    if (value <= 250) return '#8f3f97';     // Very Unhealthy
+                    return '#7e0023';                        // Hazardous (NEW!)
                 });
 
                 const ctx = document.getElementById('cityComparisonChart').getContext('2d');

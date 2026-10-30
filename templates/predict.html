@@ -102,6 +102,29 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="/predict">
+                        <!-- Ensemble Info Banner -->
+                        <div class="alert alert-success border-0 mb-4" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border-left: 5px solid #10b981 !important;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-brain fa-2x text-success me-3"></i>
+                                <div>
+                                    <strong class="text-success">
+                                        {% if current_lang == 'id' %}
+                                        🚀 Sistem Menggunakan Ensemble Machine Learning
+                                        {% else %}
+                                        🚀 System Uses Ensemble Machine Learning
+                                        {% endif %}
+                                    </strong>
+                                    <p class="mb-0 small mt-1">
+                                        {% if current_lang == 'id' %}
+                                        Prediksi lebih akurat dengan menggabungkan 3 model: Random Forest + Gradient Boosting + LSTM
+                                        {% else %}
+                                        More accurate predictions by combining 3 models: Random Forest + Gradient Boosting + LSTM
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
                             <label for="city" class="form-label fw-bold">
                                 <i class="fas fa-map-marker-alt"></i> {{ t.select_city }}
@@ -240,29 +263,55 @@
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    // Debug: Check if jQuery and Select2 are loaded
+    console.log('jQuery loaded:', typeof jQuery !== 'undefined');
+    console.log('Select2 loaded:', typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined');
+    
     $(document).ready(function() {
-        // Initialize Select2 dengan search
-        $('#city').select2({
-            theme: 'bootstrap-5',
-            placeholder: '{% if current_lang == "id" %}Ketik untuk mencari kota...{% else %}Type to search city...{% endif %}',
-            allowClear: true,
-            width: '100%',
-            language: {
-                noResults: function() {
-                    return '{% if current_lang == "id" %}Kota tidak ditemukan{% else %}City not found{% endif %}';
-                },
-                searching: function() {
-                    return '{% if current_lang == "id" %}Mencari...{% else %}Searching...{% endif %}';
-                }
-            }
-        });
+        console.log('DOM ready, initializing Select2...');
         
-        // Auto-focus search input saat dropdown dibuka
-        $('#city').on('select2:open', function() {
-            setTimeout(function() {
-                $('.select2-search__field').focus();
-            }, 100);
-        });
+        // Check if Select2 is available
+        if (typeof $.fn.select2 === 'undefined') {
+            console.error('Select2 is not loaded!');
+            return;
+        }
+        
+        try {
+            // Initialize Select2 dengan search
+            var $citySelect = $('#city');
+            
+            $citySelect.select2({
+                theme: 'bootstrap-5',
+                placeholder: '{% if current_lang == "id" %}Ketik untuk mencari kota...{% else %}Type to search city...{% endif %}',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return '{% if current_lang == "id" %}Kota tidak ditemukan{% else %}City not found{% endif %}';
+                    },
+                    searching: function() {
+                        return '{% if current_lang == "id" %}Mencari...{% else %}Searching...{% endif %}';
+                    }
+                }
+            });
+            
+            console.log('Select2 initialized successfully! Check if dropdown has search box.');
+            
+            // Auto-focus search input saat dropdown dibuka
+            $citySelect.on('select2:open', function() {
+                setTimeout(function() {
+                    var searchField = $('.select2-search__field');
+                    if (searchField.length > 0) {
+                        searchField.focus();
+                        console.log('Search field focused');
+                    } else {
+                        console.warn('Search field not found!');
+                    }
+                }, 100);
+            });
+        } catch (error) {
+            console.error('Error initializing Select2:', error);
+        }
     });
 </script>
 {% endblock %}

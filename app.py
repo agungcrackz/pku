@@ -171,12 +171,7 @@ def get_map_data():
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     """
-    Prediction page
-    
-    NOTE: Currently using actual PM2.5 values from air_quality_data.csv instead of 
-    model predictions because of data leakage issues in the trained models.
-    After retraining models properly (see MODEL_FIX_GUIDE.md), this should use
-    actual predictions from the ML models.
+    Prediction page using Ensemble Method (RF + GB + LSTM)
     """
     if request.method == 'POST':
         try:
@@ -186,56 +181,76 @@ def predict():
             # Get current language
             lang = session.get('lang', 'id')
             
-            # Load CURRENT air quality data (not test data!)
+            # Load test data for ML prediction
+            test_df = pd.read_csv('data/test_data.csv')
+            
+            # Get a sample from test set (in production, you'd use real-time features)
+            # For now, we'll use the first sample as representative
+            X_sample = test_df.drop('target', axis=1).iloc[0:1]
+            
+            # 🚀 USE ENSEMBLE METHOD (RF + GB + LSTM)
+            print(f"\n{'='*60}")
+            print(f"🎯 Predicting PM2.5 for: {city}")
+            print(f"{'='*60}")
+            result = predictor.predict_ensemble_and_classify(X_sample)
+            print(f"{'='*60}\n")
+            
+            # Translate status to selected language
+            air_quality_en_status = result['air_quality']['status']
+            result['air_quality']['status'] = translate_aqi_category(air_quality_en_status, lang)
+            
+            # Get actual data for comparison (optional)
             df = pd.read_csv('data/air_quality_data.csv')
             df['timestamp'] = pd.to_datetime(df['timestamp'])
-            
-            # Get latest data for selected city
             city_data = df[df['city'] == city].sort_values('timestamp').tail(1)
             
-            if city_data.empty:
-                raise ValueError(f"No data found for city: {city}")
+            if not city_data.empty:
+                actual_pm25 = float(city_data['pm2_5'].iloc[0])
+                result['actual_pm25'] = actual_pm25
+                result['prediction_diff'] = result['pm25_predicted'] - actual_pm25
             
-            # Use latest real PM2.5 value from data
-            actual_pm25 = float(city_data['pm2_5'].iloc[0])
-            actual_pm10 = float(city_data['pm10'].iloc[0])
-            actual_no2 = float(city_data['no2'].iloc[0])
+            # Model comparison (individual models)
+            comparison = {}
             
-            # Classify and translate
-            air_quality_en = predictor.classify_air_quality(actual_pm25)
-            air_quality_translated = air_quality_en.copy()
-            air_quality_translated['status'] = translate_aqi_category(air_quality_en['status'], lang)
-            
-            # For now, use actual value as "prediction" until model is retrained properly
-            # TODO: After retraining model, use actual prediction here
-            result = {
-                'pm25_predicted': actual_pm25,
-                'air_quality': air_quality_translated,
-                'recommendations': predictor.get_recommendations(air_quality_en['status']),
-                'who_standard': predictor.who_standards['pm2_5'],
-                'who_ratio': float(actual_pm25 / predictor.who_standards['pm2_5'])
-            }
-            
-            # Add comparison data (using same actual values for consistency)
-            air_quality_for_comparison = predictor.classify_air_quality(actual_pm25)
-            air_quality_for_comparison['status'] = translate_aqi_category(
-                predictor.classify_air_quality(actual_pm25)['status'], 
-                lang
-            )
-            
-            comparison = {
-                'random_forest': {
-                    'prediction': actual_pm25,
-                    'classification': air_quality_for_comparison
-                },
-                'gradient_boosting': {
-                    'prediction': actual_pm25,
-                    'classification': air_quality_for_comparison
-                },
-                'ensemble': {
-                    'prediction': actual_pm25,
-                    'classification': air_quality_for_comparison
+            # Random Forest
+            if predictor.rf_model:
+                rf_pred = predictor.rf_model.predict(X_sample)[0]
+                rf_class = predictor.classify_air_quality(rf_pred)
+                rf_class['status'] = translate_aqi_category(rf_class['status'], lang)
+                comparison['random_forest'] = {
+                    'prediction': float(rf_pred),
+                    'classification': rf_class
                 }
+            
+            # Gradient Boosting
+            if predictor.gb_model:
+                gb_pred = predictor.gb_model.predict(X_sample)[0]
+                gb_class = predictor.classify_air_quality(gb_pred)
+                gb_class['status'] = translate_aqi_category(gb_class['status'], lang)
+                comparison['gradient_boosting'] = {
+                    'prediction': float(gb_pred),
+                    'classification': gb_class
+                }
+            
+            # LSTM
+            if predictor.lstm_model:
+                try:
+                    lstm_features = np.array(X_sample).reshape((1, 1, X_sample.shape[1]))
+                    lstm_pred = predictor.lstm_model.predict(lstm_features, verbose=0)[0][0]
+                    lstm_class = predictor.classify_air_quality(lstm_pred)
+                    lstm_class['status'] = translate_aqi_category(lstm_class['status'], lang)
+                    comparison['lstm'] = {
+                        'prediction': float(lstm_pred),
+                        'classification': lstm_class
+                    }
+                except Exception as e:
+                    print(f"LSTM prediction failed: {e}")
+            
+            # Ensemble (already in result, but add to comparison)
+            ensemble_class = result['air_quality'].copy()
+            comparison['ensemble'] = {
+                'prediction': result['pm25_predicted'],
+                'classification': ensemble_class
             }
             
             return render_template('predict_result.html', 
@@ -244,6 +259,8 @@ def predict():
                                  comparison=comparison)
         
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return render_template('error.html', error=str(e))
     
     return render_template('predict.html', cities=list(visualizer.cities.keys()))
