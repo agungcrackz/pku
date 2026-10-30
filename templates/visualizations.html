@@ -2,6 +2,85 @@
 
 {% block title %}Visualisasi - Air Quality Indonesia{% endblock %}
 
+{% block extra_head %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    /* Select2 Container Styling - sama seperti predict.html */
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 48px;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: 2px solid #6c757d;
+        border-radius: 8px;
+        background-color: white;
+    }
+    
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        line-height: 30px;
+        color: #495057;
+    }
+    
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+    
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection,
+    .select2-container--bootstrap-5.select2-container--open .select2-selection {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    /* Dropdown positioning - RAPAT KE INPUT */
+    .select2-dropdown {
+        border: 2px solid #0d6efd;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        margin-top: -2px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .select2-container--bootstrap-5.select2-container--open .select2-selection {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .select2-search--dropdown {
+        padding: 8px;
+        background: #f8f9fa;
+    }
+    
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 15px;
+        width: 100%;
+    }
+    
+    .select2-search--dropdown .select2-search__field:focus {
+        border-color: #0d6efd;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+    
+    .select2-results__option {
+        padding: 12px 16px;
+        font-size: 15px;
+    }
+    
+    .select2-results__option--highlighted {
+        background-color: #0d6efd !important;
+        color: white;
+    }
+    
+    .select2-results__option--selected {
+        background-color: #e7f1ff;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">
@@ -14,7 +93,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <label for="citySelect" class="form-label">
+                    <label for="citySelect" class="form-label fw-bold">
+                        <i class="fas fa-map-marker-alt"></i>
                         {% if current_lang == 'id' %}Pilih Kota untuk Time Series:{% else %}Select City for Time Series:{% endif %}
                     </label>
                     <select class="form-select" id="citySelect">
@@ -22,7 +102,7 @@
                             {% if current_lang == 'id' %}-- Memuat kota... --{% else %}-- Loading cities... --{% endif %}
                         </option>
                     </select>
-                    <small class="text-muted">
+                    <small class="text-muted mt-2 d-block">
                         <i class="fas fa-info-circle"></i> 
                         {% if current_lang == 'id' %}88 kota di 38 provinsi tersedia{% else %}88 cities across 38 provinces available{% endif %}
                     </small>
@@ -169,6 +249,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let historicalChart;
     let forecastChart;
@@ -187,6 +269,12 @@
                 const citySelect = document.getElementById('citySelect');
                 citySelect.innerHTML = ''; // Clear loading message
                 
+                // Add placeholder option
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = '{% if current_lang == "id" %}-- Pilih Kota --{% else %}-- Select City --{% endif %}';
+                citySelect.appendChild(placeholderOption);
+                
                 // Add cities to dropdown
                 data.cities.forEach(city => {
                     const option = document.createElement('option');
@@ -195,9 +283,25 @@
                     citySelect.appendChild(option);
                 });
                 
+                // Initialize Select2 AFTER options loaded
+                $('#citySelect').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '{% if current_lang == "id" %}Ketik untuk mencari kota...{% else %}Type to search city...{% endif %}',
+                    allowClear: false,
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return '{% if current_lang == "id" %}Kota tidak ditemukan{% else %}City not found{% endif %}';
+                        },
+                        searching: function() {
+                            return '{% if current_lang == "id" %}Mencari...{% else %}Searching...{% endif %}';
+                        }
+                    }
+                });
+                
                 // Load first city by default
                 if (data.cities.length > 0) {
-                    citySelect.value = data.cities[0];
+                    $('#citySelect').val(data.cities[0]).trigger('change');
                     loadHistoricalChart(data.cities[0]);
                     loadForecastChart(data.cities[0]);
                 }
@@ -205,9 +309,19 @@
                 loadCityComparisonData();
                 
                 // Event listener for city selection
-                citySelect.addEventListener('change', function() {
-                    loadHistoricalChart(this.value);
-                    loadForecastChart(this.value);
+                $('#citySelect').on('change', function() {
+                    const selectedCity = $(this).val();
+                    if (selectedCity) {
+                        loadHistoricalChart(selectedCity);
+                        loadForecastChart(selectedCity);
+                    }
+                });
+                
+                // Auto-focus search input saat dropdown dibuka
+                $('#citySelect').on('select2:open', function() {
+                    setTimeout(function() {
+                        $('.select2-search__field').focus();
+                    }, 100);
                 });
             })
             .catch(error => {
